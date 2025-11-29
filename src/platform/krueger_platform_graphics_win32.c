@@ -6,13 +6,13 @@
 
 internal Platform_Handle
 win32_handle_from_window(Win32_Window *window) {
-  Platform_Handle result = { cast(uxx) window };
+  Platform_Handle result = {(uxx)window};
   return(result);
 }
 
 internal Win32_Window *
 win32_window_from_handle(Platform_Handle handle) {
-  Win32_Window *result = cast(Win32_Window *) handle.ptr[0];
+  Win32_Window *result = (Win32_Window *)handle.ptr[0];
   return(result);
 }
 
@@ -121,9 +121,9 @@ platform_graphics_init(void) {
 
   win32_graphics_state->atom = RegisterClassExA(&window_class);
 
-  DEVMODEA devmode = { .dmSize = sizeof(DEVMODE) };
+  DEVMODEA devmode = {.dmSize = sizeof(DEVMODE)};
   if (EnumDisplaySettingsA(0, ENUM_CURRENT_SETTINGS, &devmode)) {
-    win32_graphics_state->graphics_info.refresh_rate = cast(f32) devmode.dmDisplayFrequency;
+    win32_graphics_state->graphics_info.refresh_rate = (f32)devmode.dmDisplayFrequency;
   }
 
   win32_graphics_state->key_table[VK_ESCAPE] = KEY_ESCAPE;
@@ -157,7 +157,7 @@ platform_get_graphics_info(void) {
 
 internal Platform_Handle
 platform_window_open(String8 title, s32 width, s32 height) {
-  char *window_title = cast(char *) title.str;
+  char *window_title = (char *)title.str;
 
   s32 window_w = width;
   s32 window_h = height;
@@ -231,8 +231,8 @@ platform_window_display_buffer(Platform_Handle handle, u32 *buffer, s32 buffer_w
     s32 window_w = client_rectangle.right - client_rectangle.left;
     s32 window_h = client_rectangle.bottom - client_rectangle.top;
 
-    s32 display_w = cast(s32) floor_f32((buffer_w*(cast(f32)window_h/cast(f32)buffer_h)));
-    s32 display_h = cast(s32) floor_f32((buffer_h*(cast(f32)window_w/cast(f32)buffer_w)));
+    s32 display_w = (s32)floor_f32((buffer_w*((f32)window_h/(f32)buffer_h)));
+    s32 display_h = (s32)floor_f32((buffer_h*((f32)window_w/(f32)buffer_w)));
 
     s32 offset_x = (window_w - display_w)/2;
     s32 offset_y = (window_h - display_h)/2;
@@ -272,7 +272,7 @@ platform_window_toggle_fullscreen(Platform_Handle handle) {
     DWORD window_style = GetWindowLong(window->hwnd, GWL_STYLE);
     b32 is_fullscreen_already = platform_window_is_fullscreen(handle);
     if (!is_fullscreen_already) {
-      MONITORINFO monitor_info = { .cbSize = sizeof(monitor_info) };
+      MONITORINFO monitor_info = {.cbSize = sizeof(monitor_info)};
       if (GetWindowPlacement(window->hwnd, &window->last_placement) &&
         GetMonitorInfo(MonitorFromWindow(window->hwnd, MONITOR_DEFAULTTOPRIMARY), &monitor_info)) {
         SetWindowLong(window->hwnd, GWL_STYLE, window_style & ~WS_OVERLAPPEDWINDOW);

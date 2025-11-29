@@ -122,9 +122,9 @@ platform_copy_file_path(String8 dst, String8 src) {
 }
 
 internal Platform_Handle
-platform_library_open(String8 filepath) {
+platform_library_open(String8 file_path) {
   Platform_Handle result = {0};
-  result.ptr[0] = (uxx)LoadLibraryA((LPCSTR)filepath.str);
+  result.ptr[0] = (uxx)LoadLibraryA((LPCSTR)file_path.str);
   return(result);
 }
 

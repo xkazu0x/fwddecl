@@ -12,13 +12,13 @@ char_is_space(u8 c) {
 
 internal b32
 char_is_upper(u8 c) {
-  b32 result = ((c >= 'a') && (c <= 'z'));
+  b32 result = ((c >= 'A') && (c <= 'Z'));
   return(result);
 }
 
 internal b32
 char_is_lower(u8 c) {
-  b32 result = ((c >= 'A') && (c <= 'Z'));
+  b32 result = ((c >= 'a') && (c <= 'z'));
   return(result);
 }
 
@@ -284,6 +284,7 @@ str8_list_push(Arena *arena, String8_List *list, String8 str) {
   String8_Node *result = push_array(arena, String8_Node, 1);
   queue_push(list->first, list->last, result);
   list->count += 1;
+  list->total_size += str.len;
   result->str = str;
   return(result);
 }

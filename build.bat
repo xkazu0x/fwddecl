@@ -43,6 +43,13 @@ if "%clean%"=="1" rmdir /s /q build
 if not exist build mkdir build
 
 pushd build
-%compile% ..\src\main.c %link% %out% header_gen.exe || exit /b 1
-if "%run%"=="1" call header_gen.exe
+%compile% ..\src\fwddecl.c %link% %out% fwddecl.exe || exit /b 1
 popd
+
+if "%example%"=="1" (
+  pushd build
+  call fwddecl.exe
+  %compile% ..\src\example.c %link% %out% example.exe || exit /b 1
+  call example.exe
+  popd
+)

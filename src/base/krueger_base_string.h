@@ -21,6 +21,7 @@ struct String8_List {
   String8_Node *first;
   String8_Node *last;
   u32 count;
+  uxx total_size;
 };
 
 //////////////////////////

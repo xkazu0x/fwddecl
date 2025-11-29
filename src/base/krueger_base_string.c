@@ -118,7 +118,7 @@ internal String8
 str8_cstr(char *cstr) {
   String8 result = {
     .len = cstr_len(cstr),
-    .str = cast(u8 *) cstr,
+    .str = (u8 *)cstr,
   };
   return(result);
 }
@@ -229,7 +229,7 @@ str8_fmt_args(Arena *arena, char *fmt, va_list args) {
   u32 size = vsnprintf(0, 0, fmt, args) + 1;
   String8 result = {0};
   result.str = push_array(arena, u8, size);
-  result.len = vsnprintf(cast(char *) result.str, size, fmt, args_copy);
+  result.len = vsnprintf((char *)result.str, size, fmt, args_copy);
   result.str[result.len] = 0;
   va_end(args_copy);
   return(result);

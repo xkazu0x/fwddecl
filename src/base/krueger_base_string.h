@@ -13,7 +13,7 @@ struct String8 {
 typedef struct String8_Node String8_Node;
 struct String8_Node {
   String8_Node *next;
-  String8 str;
+  String8 string;
 };
 
 typedef struct String8_List String8_List;
@@ -56,28 +56,30 @@ internal String8 str8_cstr(char *cstr);
 #define str8_match_lit(a, b)  str8_match((a), str8_lit(b))
 #define str8_match_cstr(a, b) str8_match((a), str8_cstr(b))
 internal b32 str8_match(String8 a, String8 b);
-internal uxx str8_find_first(String8 str, u8 c);
-internal uxx str8_find_last(String8 str, u8 c);
+internal uxx str8_find_first(String8 string, u8 c);
+internal uxx str8_find_last(String8 string, u8 c);
 
 ///////////////////////
 // NOTE: String Slicing
 
-internal String8 str8_substr(String8 str, uxx min, uxx max);
-internal String8 str8_skip(String8 str, uxx amt);
-internal String8 str8_chop(String8 str, uxx amt);
+internal String8 str8_substr(String8 string, uxx min, uxx max);
+internal String8 str8_skip(String8 string, uxx amt);
+internal String8 str8_chop(String8 string, uxx amt);
 
 ////////////////////////////////////
 // NOTE: String Formatting & Copying
 
 internal String8 str8_cat(Arena *arena, String8 a, String8 b);
-internal String8 str8_copy(Arena *arena, String8 str);
+internal String8 str8_copy(Arena *arena, String8 string);
 internal String8 str8_fmt_args(Arena *arena, char *fmt, va_list args);
 internal String8 str8_fmt(Arena *arena, char *fmt, ...);
 
 ////////////////////
 // NOTE: String List
 
-internal String8_Node *str8_list_push(Arena *arena, String8_List *list, String8 str);
+internal String8_Node *str8_list_push(Arena *arena, String8_List *list, String8 string);
+internal String8_Node *str8_list_push_copy(Arena *arena, String8_List *list, String8 string);
 internal String8_Node *str8_list_push_fmt(Arena *arena, String8_List *list, char *fmt, ...);
+internal String8 str8_list_join(Arena *arena, String8_List *list);
 
 #endif // KRUEGER_BASE_STRING_H

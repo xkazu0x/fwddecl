@@ -31,6 +31,7 @@ internal void *platform_read_entire_file(Arena *arena, String8 file_path);
 
 internal void platform_core_init(void);
 internal void platform_core_shutdown(void);
+internal void platform_abort(s32 exit_code);
 
 internal Date_Time platform_get_date_time(void);
 internal String8 platform_get_exec_file_path(Arena *arena);

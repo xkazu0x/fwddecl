@@ -7,7 +7,8 @@
 internal String8
 string_from_file_path(Arena *arena, String8 file_path) {
   String8 result = {0};
-  Platform_Handle file = platform_file_open(file_path, PLATFORM_FILE_READ | PLATFORM_FILE_SHARE_READ);
+  Platform_File_Flags flags = PLATFORM_FILE_READ|PLATFORM_FILE_SHARE_RED;
+  Platform_Handle file = platform_file_open(file_path, flags);
   if (!platform_handle_is_null(file)) {
     u64 file_size = platform_get_file_size(file);
     result.len = file_size;
@@ -17,6 +18,11 @@ string_from_file_path(Arena *arena, String8 file_path) {
     platform_file_close(file);
   }
   return(result);
+}
+
+internal void
+write_string(Platform_Handle file, String8 string) {
+  platform_file_write(file, string.str, string.len);
 }
 
 typedef enum {
@@ -134,44 +140,32 @@ get_token(Tokenizer *tokenizer) {
   return(token);
 }
 
-internal b32
-token_match_text(Token token, char *cstr) {
-  b32 result = str8_match_cstr(token.text, cstr);
-  return(result);
-}
-
 internal void
 parse_struct(Tokenizer *tokenizer, Arena *arena, String8_List *list) {
   Token token = get_token(tokenizer);
   if (token.type == TOKEN_IDENTIFIER) {
-    String8 copy = str8_fmt(arena, "typedef struct %.*s %.*s;",
-                            token.text.len, token.text.str,
-                            token.text.len, token.text.str);
-    str8_list_push(arena, list, copy);
-
-    copy = str8_copy(arena, str8_lit("\n"));
-    str8_list_push(arena, list, copy);
+    str8_list_push_fmt(arena, list, "typedef struct %.*s %.*s;",
+                       token.text.len, token.text.str,
+                       token.text.len, token.text.str);
+    str8_list_push_copy(arena, list, str8_lit("\n"));
   }
 }
 
 internal void
 parse_internal(Tokenizer *tokenizer, Arena *arena, String8_List *list) {
   Temp scratch = scratch_begin(&arena, 1);
-  Token_List token_list = {0};
 
+  Token_List token_list = {0};
   for (;;) {
     Token token = get_token(tokenizer);
     if (token.type == TOKEN_OPEN_BRACE) break;
-
     Token_Node *token_node = push_array(scratch.arena, Token_Node, 1);
     token_node->token = token;
     dll_push_back(token_list.first, token_list.last, token_node);
   }
 
   String8_List string_list = {0};
-  String8 copy = str8_copy(scratch.arena, str8_lit("internal "));
-  str8_list_push(scratch.arena, &string_list, copy);
-
+  str8_list_push_copy(scratch.arena, &string_list, str8_lit("internal "));
   for (Token_Node *node = token_list.first; node != 0; node = node->next) {
     Token token = node->token;
     String8 text = token.text;
@@ -181,56 +175,44 @@ parse_internal(Tokenizer *tokenizer, Arena *arena, String8_List *list) {
         Token next_token = node->next->token;
         if (next_token.type == TOKEN_IDENTIFIER ||
             next_token.type == TOKEN_ASTERISK) {
-          copy = str8_fmt(scratch.arena, "%.*s ", (int)text.len, (char *)text.str);
-          str8_list_push(scratch.arena, &string_list, copy);
+          str8_list_push_fmt(scratch.arena, &string_list, "%.*s ",
+                             (int)text.len, (char *)text.str);
         } else {
-          copy = str8_fmt(scratch.arena, "%.*s", (int)text.len, (char *)text.str);
-          str8_list_push(scratch.arena, &string_list, copy);
+          str8_list_push(scratch.arena, &string_list, text);
         }
       } break;
 
       case TOKEN_COMMA: {
-        copy = str8_fmt(scratch.arena, "%.*s ", (int)text.len, (char *)text.str);
-        str8_list_push(scratch.arena, &string_list, copy);
+        str8_list_push_fmt(scratch.arena, &string_list, "%.*s ",
+                           (int)text.len, (char *)text.str);
       } break;
 
       default: {
-        copy = str8_fmt(scratch.arena, "%.*s", (int)text.len, (char *)text.str);
-        str8_list_push(scratch.arena, &string_list, copy);
+        str8_list_push(scratch.arena, &string_list, text);
       } break;
     }
   }
+  str8_list_push_copy(scratch.arena, &string_list, str8_lit(";"));
 
-  copy = str8_copy(scratch.arena, str8_lit(";"));
-  str8_list_push(scratch.arena, &string_list, copy);
-
-  String8 result = {0};
-  result.len = string_list.total_size;
-  result.str = push_array(arena, u8, result.len + 1);
-  result.str[result.len] = 0;
-
-  u8 *ptr = result.str;
-  for (String8_Node *node = string_list.first; node != 0; node = node->next) {
-    String8 string = node->str;
-    mem_copy(ptr, string.str, string.len);
-    ptr += string.len;
-  }
-
-  str8_list_push(arena, list, result);
-
-  copy = str8_copy(arena, str8_lit("\n"));
-  str8_list_push(arena, list, copy);
+  String8 string = str8_list_join(arena, &string_list);
+  str8_list_push(arena, list, string);
+  str8_list_push_copy(arena, list, str8_lit("\n"));
 
   scratch_end(scratch);
 }
 
 int
-main(void) {
+main(int argc, char *argv[]) {
   Thread_Context *thread_context = thread_context_alloc();
   thread_context_select(thread_context);
 
+  if (argc != 2) {
+    log_error("usage > fwddecl <file_path>");
+    platform_abort(1);
+  }
+
   Arena *arena = arena_alloc();
-  String8 src_file_path = str8_lit("..\\src\\example.c");
+  String8 src_file_path = str8_cstr(argv[1]);
 
   String8 file_data = string_from_file_path(arena, src_file_path);
   Tokenizer tokenizer = {.at = file_data.str};
@@ -249,74 +231,62 @@ main(void) {
       } break;
 
       case TOKEN_IDENTIFIER: {
-        if (token_match_text(token, "struct")) {
+        if (str8_match_lit(token.text, "struct")) {
           parse_struct(&tokenizer, struct_arena, &struct_list);
-        } else if (token_match_text(token, "internal")) {
+        } else if (str8_match_lit(token.text, "internal")) {
           parse_internal(&tokenizer, proc_arena, &proc_list);
         }
       } break;
     }
   }
 
+  String8 post_fix = str8_lit(".meta.h");
   uxx last_slash = str8_find_last(src_file_path, '\\');
   uxx last_dot = str8_find_last(src_file_path, '.');
   
   String8 dst_file_path = str8_substr(src_file_path, 0, last_dot);
-  String8 file_name = str8_substr(src_file_path, last_slash + 1, last_dot);
-
-  String8 post_fix = str8_lit(".meta.h");
   dst_file_path = str8_cat(arena, dst_file_path, post_fix);
-  String8 dst_file_name = str8_cat(arena, file_name, post_fix);
 
-  String8 guard = {0};
-  guard.len = dst_file_name.len;
-  guard.str = push_array(arena, u8, guard.len + 1);
-  guard.str[guard.len] = 0;
+  String8 file_name = str8_substr(src_file_path, last_slash + 1, last_dot);
+  file_name = str8_cat(arena, file_name, post_fix);
 
-  for (uxx i = 0; i < dst_file_name.len; ++i) {
-    u8 c = dst_file_name.str[i];
-    if (char_is_lower(c)) {
-      c -= 'a' - 'A';
-    } else if (c == '.') {
-      c = '_';
+  Platform_Handle file = platform_file_open(dst_file_path, PLATFORM_FILE_WRITE); {
+    String8 guard = {0};
+    guard.len = file_name.len;
+    guard.str = push_array(arena, u8, guard.len + 1);
+    guard.str[guard.len] = 0;
+
+    for (uxx i = 0; i < file_name.len; ++i) {
+      u8 c = file_name.str[i];
+      if (char_is_lower(c)) {
+        c -= 'a' - 'A';
+      } else if (c == '.') {
+        c = '_';
+      }
+      guard.str[i] = c;
     }
-    guard.str[i] = c;
-  }
 
-  Platform_Handle file = platform_file_open(dst_file_path, PLATFORM_FILE_WRITE);
+    String8 string = str8_cat(arena, str8_lit("#ifndef "), guard);
+    write_string(file, string);
+    write_string(file, str8_lit("\n"));
 
-  String8 string = str8_cat(arena, str8_lit("#ifndef "), guard);
-  platform_file_write(file, string.str, string.len);
+    string = str8_cat(arena, str8_lit("#define "), guard);
+    write_string(file, string);
+    write_string(file, str8_lit("\n\n"));
 
-  string = str8_lit("\n");
-  platform_file_write(file, string.str, string.len);
+    for (String8_Node *node = struct_list.first; node != 0; node = node->next) {
+      write_string(file, node->string);
+    }
+    write_string(file, str8_lit("\n"));
 
-  string = str8_cat(arena, str8_lit("#define "), guard);
-  platform_file_write(file, string.str, string.len);
+    for (String8_Node *node = proc_list.first; node != 0; node = node->next) {
+      write_string(file, node->string);
+    }
+    write_string(file, str8_lit("\n"));
 
-  string = str8_lit("\n\n");
-  platform_file_write(file, string.str, string.len);
-
-  for (String8_Node *node = struct_list.first; node != 0; node = node->next) {
-    string = node->str;
+    string = str8_cat(arena, str8_lit("#endif // "), guard);
     platform_file_write(file, string.str, string.len);
-  }
-
-  string = str8_lit("\n");
-  platform_file_write(file, string.str, string.len);
-
-  for (String8_Node *node = proc_list.first; node != 0; node = node->next) {
-    string = node->str;
-    platform_file_write(file, string.str, string.len);
-  }
-
-  string = str8_lit("\n");
-  platform_file_write(file, string.str, string.len);
-
-  string = str8_cat(arena, str8_lit("#endif // "), guard);
-  platform_file_write(file, string.str, string.len);
-
-  platform_file_close(file);
+  } platform_file_close(file);
 
   return(0);
 }

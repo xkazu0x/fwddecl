@@ -145,29 +145,29 @@ str8_match(String8 a, String8 b) {
 }
 
 internal uxx
-str8_find_first(String8 str, u8 c) {
-  u8 *tmp_ptr = str.str;
-  for (uxx i = 0; i < str.len; ++i) {
-    u8 *str_ptr = str.str + i;
-    if (*str_ptr == c) {
-      tmp_ptr = str_ptr;
+str8_find_first(String8 string, u8 c) {
+  u8 *ptr = string.str;
+  for (uxx i = 0; i < string.len; ++i) {
+    u8 *str = string.str + i;
+    if (*str == c) {
+      ptr = str;
       break;
     }
   }
-  uxx result = tmp_ptr - str.str;
+  uxx result = ptr - string.str;
   return(result);
 }
 
 internal uxx
-str8_find_last(String8 str, u8 c) {
-  u8 *tmp_ptr = str.str;
-  for (uxx i = 0; i < str.len; ++i) {
-    u8 *str_ptr = str.str + i;
-    if (*str_ptr == c) {
-      tmp_ptr = str_ptr;
+str8_find_last(String8 string, u8 c) {
+  u8 *ptr = string.str;
+  for (uxx i = 0; i < string.len; ++i) {
+    u8 *str = string.str + i;
+    if (*str == c) {
+      ptr = str;
     }
   }
-  uxx result = tmp_ptr - str.str;
+  uxx result = ptr - string.str;
   return(result);
 }
 
@@ -175,27 +175,27 @@ str8_find_last(String8 str, u8 c) {
 // NOTE: String Slicing
 
 internal String8
-str8_substr(String8 str, uxx min, uxx max) {
-  min = clamp_top(min, str.len);
-  max = clamp_top(max, str.len);
-  str.str += min;
-  str.len = max - min;
-  return(str);
+str8_substr(String8 string, uxx min, uxx max) {
+  min = clamp_top(min, string.len);
+  max = clamp_top(max, string.len);
+  string.str += min;
+  string.len = max - min;
+  return(string);
 }
 
 internal String8
-str8_skip(String8 str, uxx amt) {
-  amt = clamp_top(amt, str.len);
-  str.str += amt;
-  str.len -= amt;
-  return(str);
+str8_skip(String8 string, uxx amt) {
+  amt = clamp_top(amt, string.len);
+  string.str += amt;
+  string.len -= amt;
+  return(string);
 }
 
 internal String8
-str8_chop(String8 str, uxx amt) {
-  amt = clamp_top(amt, str.len);
-  str.len -= amt;
-  return(str);
+str8_chop(String8 string, uxx amt) {
+  amt = clamp_top(amt, string.len);
+  string.len -= amt;
+  return(string);
 }
 
 //////////////////////////
@@ -213,11 +213,11 @@ str8_cat(Arena *arena, String8 a, String8 b) {
 }
 
 internal String8
-str8_copy(Arena *arena, String8 str) {
+str8_copy(Arena *arena, String8 string) {
   String8 result = {0};
-  result.len = str.len;
-  result.str = push_array(arena, u8, str.len + 1);
-  mem_copy(result.str, str.str, str.len);
+  result.len = string.len;
+  result.str = push_array(arena, u8, result.len + 1);
+  mem_copy(result.str, string.str, string.len);
   result.str[result.len] = 0;
   return(result);
 }
@@ -244,7 +244,51 @@ str8_fmt(Arena *arena, char *fmt, ...) {
   return(result);
 }
 
+////////////////////
+// NOTE: String List
+
+internal String8_Node *
+str8_list_push(Arena *arena, String8_List *list, String8 string) {
+  String8_Node *result = push_array(arena, String8_Node, 1);
+  queue_push(list->first, list->last, result);
+  list->count += 1;
+  list->total_size += string.len;
+  result->string = string;
+  return(result);
+}
+
+internal String8_Node *
+str8_list_push_copy(Arena *arena, String8_List *list, String8 string) {
+  String8 copy = str8_copy(arena, string);
+  String8_Node *result = str8_list_push(arena, list, copy);
+  return(result);
+}
+
+internal String8_Node *
+str8_list_push_fmt(Arena *arena, String8_List *list, char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  String8 string = str8_fmt_args(arena, fmt, args);
+  String8_Node *result = str8_list_push(arena, list, string);
+  va_end(args);
+  return(result);
+}
+
+internal String8
+str8_list_join(Arena *arena, String8_List *list) {
+  String8 result = {0};
+  result.len = list->total_size;
+  u8 *ptr = result.str = push_array(arena, u8, result.len + 1);
+  for (String8_Node *node = list->first; node != 0; node = node->next) {
+    mem_copy(ptr, node->string.str, node->string.len);
+    ptr += node->string.len;
+  }
+  *ptr = 0;
+  return(result);
+}
+
 ////////////////////////
+// TODO:
 
 internal u32
 u32_from_str8(String8 str) {
@@ -273,29 +317,6 @@ f32_from_str8(String8 str) {
     }
   }
   result = sign*result/million(1.0f);
-  return(result);
-}
-
-////////////////////
-// NOTE: String List
-
-internal String8_Node *
-str8_list_push(Arena *arena, String8_List *list, String8 str) {
-  String8_Node *result = push_array(arena, String8_Node, 1);
-  queue_push(list->first, list->last, result);
-  list->count += 1;
-  list->total_size += str.len;
-  result->str = str;
-  return(result);
-}
-
-internal String8_Node *
-str8_list_push_fmt(Arena *arena, String8_List *list, char *fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  String8 str = str8_fmt_args(arena, fmt, args);
-  String8_Node *result = str8_list_push(arena, list, str);
-  va_end(args);
   return(result);
 }
 

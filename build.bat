@@ -44,12 +44,9 @@ if not exist build mkdir build
 
 pushd build
 %compile% ..\src\fwddecl.c %link% %out% fwddecl.exe || exit /b 1
-popd
-
 if "%example%"=="1" (
-  pushd build
-  call fwddecl.exe
+  call fwddecl.exe ..\src\example.c
   %compile% ..\src\example.c %link% %out% example.exe || exit /b 1
   call example.exe
-  popd
 )
+popd

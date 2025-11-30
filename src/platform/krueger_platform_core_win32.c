@@ -17,6 +17,11 @@ platform_core_shutdown(void) {
   timeEndPeriod(1);
 }
 
+internal void
+platform_abort(s32 exit_code) {
+  ExitProcess(exit_code);
+}
+
 internal Date_Time
 platform_get_date_time(void) {
   SYSTEMTIME system;

@@ -15,14 +15,8 @@ struct Image {
   u32 *pixels;
 };
 
-int
-main(void) {
-  platform_core_init();
-  platform_graphics_init();
-
-  Thread_Context *thread_context = thread_context_alloc();
-  thread_context_select(thread_context);
-
+internal void
+entry_point(int argc, char **argv) {
   u32 render_w = 800;
   u32 render_h = 600;
 
@@ -49,9 +43,6 @@ main(void) {
     platform_window_display_buffer(window, image.pixels, image.width, image.height);
     scratch_end(scratch);
   }
-  
-  platform_core_shutdown();
-  return(0);
 }
 
 internal void

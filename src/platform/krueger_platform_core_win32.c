@@ -159,4 +159,20 @@ platform_sleep_ms(u32 ms) {
   Sleep(ms);
 }
 
+#if BUILD_ENTRY_POINT
+#if BUILD_CONSOLE_INTERFACE
+int
+main(int argc, char **argv) {
+  base_entry_point(argc, argv);
+  return(0);
+}
+#else
+int
+WinMain(HINSTANCE instance, HINSTANCE prev_instance, PSTR cmd_line, int cmd_show) {
+  base_entry_point(__argc, __argv);
+  return(0);
+}
+#endif
+#endif
+
 #endif // KRUEGER_PLATFORM_CORE_WIN32_C

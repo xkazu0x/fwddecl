@@ -55,4 +55,8 @@ internal void platform_library_close(Platform_Handle lib);
 internal u64 platform_get_time_us(void);
 internal void platform_sleep_ms(u32 ms);
 
+#if BUILD_ENTRY_POINT
+internal void entry_point(int argc, char **argv);
+#endif
+
 #endif // KRUEGER_PLATFORM_CORE_H

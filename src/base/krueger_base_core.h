@@ -82,6 +82,13 @@
 #define clamp_bot(x, b) max(x, b);
 #define clamp(a, x, b) (((x)<(a))?(a):((x)>(b))?(b):(x))
 
+///////////////////////////////////
+// NOTE: Foor-Loop Construct Macros
+
+#define each_index(type, it, count)   type it = 0; it < (count); it += 1
+#define each_element(type, it, array) type it = 0; it < array_count(array); it += 1
+#define each_node(type, it, first)    type *it = first; it != 0; it = it->next
+
 ////////////////////////////////
 // NOTE: Memory Operation Macros
 

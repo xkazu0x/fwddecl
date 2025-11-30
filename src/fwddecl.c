@@ -7,7 +7,7 @@
 internal String8
 string_from_file_path(Arena *arena, String8 file_path) {
   String8 result = {0};
-  Platform_File_Flags flags = PLATFORM_FILE_READ|PLATFORM_FILE_SHARE_RED;
+  Platform_File_Flags flags = PLATFORM_FILE_READ|PLATFORM_FILE_SHARE_READ;
   Platform_Handle file = platform_file_open(file_path, flags);
   if (!platform_handle_is_null(file)) {
     u64 file_size = platform_get_file_size(file);
@@ -166,7 +166,7 @@ parse_internal(Tokenizer *tokenizer, Arena *arena, String8_List *list) {
 
   String8_List string_list = {0};
   str8_list_push_copy(scratch.arena, &string_list, str8_lit("internal "));
-  for (Token_Node *node = token_list.first; node != 0; node = node->next) {
+  for (each_node(Token_Node, node, token_list.first)) {
     Token token = node->token;
     String8 text = token.text;
 
@@ -201,11 +201,8 @@ parse_internal(Tokenizer *tokenizer, Arena *arena, String8_List *list) {
   scratch_end(scratch);
 }
 
-int
-main(int argc, char *argv[]) {
-  Thread_Context *thread_context = thread_context_alloc();
-  thread_context_select(thread_context);
-
+internal void
+entry_point(int argc, char **argv) {
   if (argc != 2) {
     log_error("usage > fwddecl <file_path>");
     platform_abort(1);
@@ -274,12 +271,12 @@ main(int argc, char *argv[]) {
     write_string(file, string);
     write_string(file, str8_lit("\n\n"));
 
-    for (String8_Node *node = struct_list.first; node != 0; node = node->next) {
+    for (each_node(String8_Node, node, struct_list.first)) {
       write_string(file, node->string);
     }
     write_string(file, str8_lit("\n"));
 
-    for (String8_Node *node = proc_list.first; node != 0; node = node->next) {
+    for (each_node(String8_Node, node, proc_list.first)) {
       write_string(file, node->string);
     }
     write_string(file, str8_lit("\n"));
@@ -287,6 +284,4 @@ main(int argc, char *argv[]) {
     string = str8_cat(arena, str8_lit("#endif // "), guard);
     platform_file_write(file, string.str, string.len);
   } platform_file_close(file);
-
-  return(0);
 }

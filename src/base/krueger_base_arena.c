@@ -38,9 +38,6 @@ arena_push(Arena *arena, uxx cmt_size) {
 internal void
 arena_release(Arena *arena) {
   platform_release(arena->base, arena->res_size);
-  arena->res_size = 0;
-  arena->cmt_size = 0;
-  arena->base = 0;
 }
 
 internal void

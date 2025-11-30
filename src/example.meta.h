@@ -3,6 +3,7 @@
 
 typedef struct Image Image;
 
+internal void entry_point(int argc, char **argv);
 internal void draw_example(Image dst);
 internal Image image_alloc(u32 width, u32 height);
 internal Image image_scissor(Image image, u32 x0, u32 y0, u32 x1, u32 y1);

@@ -50,7 +50,7 @@
 #error unknown trap intrinsic for this compiler
 #endif
 
-#define assert_always(x) do { if (!(x)) { trap(); } } while(0)
+#define assert_always(x) do{if(!(x)){trap();}}while(0)
 #if BUILD_DEBUG
 #define assert(x) assert_always(x)
 #else
@@ -85,62 +85,80 @@
 ///////////////////////////////////
 // NOTE: Foor-Loop Construct Macros
 
-#define each_index(type, it, count)   type it = 0; it < (count); it += 1
-#define each_element(type, it, array) type it = 0; it < array_count(array); it += 1
-#define each_node(type, it, first)    type *it = first; it != 0; it = it->next
+#define each_index(type, it, count) type it = 0; it < (count); it += 1
+#define each_item(type, it, array)  type it = 0; it < array_count(array); it += 1
+#define each_node(type, it, first)  type *it = first; it != 0; it = it->next
 
 ////////////////////////////////
 // NOTE: Memory Operation Macros
 
-#define mem_copy(dst, src, size)   memmove((dst), (src), (size))
-#define mem_set(dst, byte, size)   memset((dst), (byte), (size))
-#define mem_cmp(a, b, size)        memcmp((a), (b), (size))
+#define mem_copy(dst, src, size)  memmove((dst), (src), (size))
+#define mem_set(dst, byte, size)  memset((dst), (byte), (size))
+#define mem_cmp(a, b, size)       memcmp((a), (b), (size))
 
-#define mem_zero(dst, size)        mem_set((dst), 0, (size))
-#define mem_zero_struct(dst)       mem_zero((dst), sizeof(*(dst)))
-#define mem_zero_array(dst)        mem_zero((dst), sizeof(dst));
-#define mem_zero_typed(dst, count) mem_zero((dst), sizeof(*(dst))*(count))
+#define mem_copy_struct(dst, src)       mem_copy((dst), (src), sizeof(*(dst)))
+#define mem_copy_array(dst, src)        mem_copy((dst), (src), sizeof(dst))
+#define mem_copy_typed(dst, src, count) mem_copy((dst), (src), sizeof(*(dst))*(count))
+
+#define mem_zero(dst, size)         mem_set((dst), 0, (size))
+#define mem_zero_struct(dst)        mem_zero((dst), sizeof(*(dst)))
+#define mem_zero_array(dst)         mem_zero((dst), sizeof(dst))
+#define mem_zero_typed(dst, count)  mem_zero((dst), sizeof(*(dst))*(count))
 
 ///////////////////////////
 // NOTE: Linked List Macros
 
-// NOTE: Doubly Linked List
-#define dll_push_back_np(f, l, n, next, prev) ((f)==0 ? \
-  ((f)=(l)=(n),(n)->next=(n)->prev=0) : \
-  ((n)->prev=(l),(l)->next=(n),(l)=(n),(n)->next=0))
-#define dll_push_front_np(f, l, n, next, prev) \
-  dll_push_back_np(l, f, n, prev, next)
+// NOTE: doubly-linked list
+#define dll_push_back_np(f, l, n, next, prev) \
+  ((f)==0 ? \
+    ((f)=(l)=(n),(n)->next=(n)->prev=0) : \
+    ((n)->prev=(l),(l)->next=(n),(l)=(n),(n)->next=0))
+#define dll_push_front_np(f, l, n, next, prev) dll_push_back_np(l, f, n, prev, next)
 #define dll_remove_np(f, l, n, next, prev) \
   (((n)==(f) ? (f)=(n)->next : (0)), \
    ((n)==(l) ? (l)=(l)->prev : (0)), \
    ((n)->prev==0 ? (0) : ((n)->prev->next=(n)->next)), \
    ((n)->next==0 ? (0) : ((n)->next->prev=(n)->prev)))
-#define dll_push_back(f, l, n)  dll_push_back_np(f, l, n, next, prev)
+
+// NOTE: singly-linked, doubly-headed list (queue)
+#define queue_push_n(f, l, n, next) \
+  ((f)==0 ? \
+    ((f)=(l)=(n),(n)->next=0) : \
+    ((l)->next=(n),(l)=(n),(n)->next=0))
+#define queue_push_front_n(f, l, n, next) \
+  ((f)==(l) ? \
+    ((f)=(l)=(n),(n)->next=0) : \
+    ((n)->next=(f), (f)=(n)))
+#define queue_pop_n(f, l, next) \
+  ((f)==(l) ? \
+    ((f)=(l)=0) : \
+    ((f)=(f)->next))
+
+// NOTE: singly-linked, singly-headed list (stack)
+#define stack_push_n(f, n, next) ((n)->next=(f),(f)=(n))
+#define stack_pop_n(f, next) ((f)=(f)->next)
+
+// NOTE: linked list helpers
+#define dll_push_back(f, l, n) dll_push_back_np(f, l, n, next, prev)
 #define dll_push_front(f, l, n) dll_push_front_np(f, l, n, next, prev)
-#define dll_remove(f, l, n)     dll_remove_np(f, l, n, next, prev)
+#define dll_remove(f, l, n) dll_remove_np(f, l, n, next, prev)
 
-// NOTE: Singly Linked List (Queue)
-#define queue_push_n(f, l, n, next) ((f)==0 ? \
-  ((f)=(l)=(n),(n)->next=0) : \
-  ((l)->next=(n),(l)=(n),(n)->next=0))
-#define queue_pop_n(f, l, next) ((f)==(l) ? \
-  ((f)=(l)=0) : \
-  ((f)=(f)->next))
 #define queue_push(f, l, n) queue_push_n(f, l, n, next)
-#define queue_pop(f, l)     queue_pop_n(f, l, next)
+#define queue_push_front(f, l, n) queue_push_front_n(f, l, n, next)
+#define queue_pop(f, l) queue_pop_n(f, l, next)
 
-// NOTE: Singly Linked List (Stack)
-#define stack_push_n(f, n, next) \
-  ((n)->next=(f), (f)=(n))
-#define stack_pop_n(f, next) \
-  ((f)=(f)->next)
 #define stack_push(f, n) stack_push_n(f, n, next);
-#define stack_pop(f)     stack_pop_n(f, next);
+#define stack_pop(f) stack_pop_n(f, next);
 
 ////////////////////////////
 // NOTE: Misc. Helper Macros
 
+#define compose_64bit(hi, lo) ((((u64)hi) << 32) | ((u64)lo))
+#define compose_32bit(hi, lo) ((((u32)hi) << 16) | ((u32)lo))
+
 #define array_count(x) (sizeof(x)/sizeof(*(x)))
+
+#define null_def(val, def) (((val) == 0) ? (def) : (val))
 #define square(x) ((x)*(x))
 
 #define swap_t(T, a, b) do { T t__ = a; a = b; b = t__; } while (0)
@@ -268,19 +286,36 @@ global const u32 bit32 = (u32)(1<<31);
 /////////////
 // NOTE: Time
 
-typedef struct {
-  u16 year;
-  u16 month;
-  u16 day;
-  u16 hour;
-  u16 min;
-  u16 sec;
-  u16 msec;
-} Date_Time;
+typedef struct Date_Time Date_Time;
+struct Date_Time {
+  u32 year;
+  u32 month;
+  u32 day;
+  u32 hour;
+  u32 min;
+  u32 sec;
+  u32 msec;
+};
 
 typedef u64 Dense_Time;
 
 internal Dense_Time dense_time_from_date_time(Date_Time time);
 internal Date_Time date_time_from_dense_time(Dense_Time time);
+
+/////////////
+// NOTE: File
+
+typedef u32 File_Property_Flags;
+enum {
+  FILE_PROPERTY_IS_DIRECTORY = (1<<0),
+};
+
+typedef struct File_Properties File_Properties;
+struct File_Properties {
+  u64 size;
+  Dense_Time created;
+  Dense_Time modified;
+  File_Property_Flags flags;
+};
 
 #endif // KRUEGER_BASE_CORE_H

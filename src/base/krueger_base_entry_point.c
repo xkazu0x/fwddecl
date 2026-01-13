@@ -3,17 +3,18 @@
 
 internal void
 base_entry_point(int argc, char **argv) {
+  Thread_Context *tctx = thread_context_alloc();
+  thread_context_select(tctx);
   platform_core_init();
-#if defined(KRUEGER_PLATFORM_GRAPHICS_H)
+#if defined(KRUEGER_PLATFORM_GRAPHICS_H) && !defined(PLATFORM_GRAPHICS_INIT_MANUAL)
   platform_graphics_init();
 #endif
-  Thread_Context *thread_context = thread_context_alloc();
-  thread_context_select(thread_context);
-
+#if defined(KRUEGER_OPENGL_H) && !defined(OGL_INIT_MANUAL)
+  ogl_init();
+#endif
   entry_point(argc, argv);
-
-  thread_context_release(thread_context);
   platform_core_shutdown();
+  thread_context_release(tctx);
 }
 
 #endif // KRUEGER_BASE_ENTRY_POINT_C

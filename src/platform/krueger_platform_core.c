@@ -1,8 +1,8 @@
 #ifndef KRUEGER_PLATFORM_CORE_C
 #define KRUEGER_PLATFORM_CORE_C
 
-/////////////////////////
-// NOTE: Platform Helpers
+///////////////////////////////////
+// NOTE: Helpers (Implemented Once)
 
 internal b32
 platform_handle_match(Platform_Handle a, Platform_Handle b) {
@@ -11,19 +11,19 @@ platform_handle_match(Platform_Handle a, Platform_Handle b) {
 }
 
 internal b32
-platform_handle_is_null(Platform_Handle handle) {
-  b32 result = platform_handle_match(handle, PLATFORM_HANDLE_NULL);
+platform_handle_is_valid(Platform_Handle handle) {
+  b32 result = !platform_handle_match(handle, PLATFORM_HANDLE_NULL);
   return(result);
 }
 
-internal void *
-platform_read_entire_file(Arena *arena, String8 file_path) {
-  void *result = 0;
+internal String8
+platform_data_from_file_path(Arena *arena, String8 file_path) {
+  String8 result = {0};
   Platform_Handle file = platform_file_open(file_path, PLATFORM_FILE_READ | PLATFORM_FILE_SHARE_READ);
-  if (!platform_handle_match(file, PLATFORM_HANDLE_NULL)) {
-    u64 file_size = platform_get_file_size(file);
-    result = arena_push(arena, file_size);
-    platform_file_read(file, result, file_size);
+  if (platform_handle_is_valid(file)) {
+    result.len = platform_get_file_size(file);
+    result.str = arena_push(arena, result.len);
+    platform_file_read(file, result.str, result.len);
     platform_file_close(file);
   }
   return(result);

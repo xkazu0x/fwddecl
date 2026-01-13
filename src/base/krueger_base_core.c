@@ -38,7 +38,8 @@ date_time_from_dense_time(Dense_Time time) {
   time /= 31;
   result.month = time % 12;
   time /= 12;
-  result.year  = (u16)time;
+  assert(time <= u32_max);
+  result.year  = (u32)time;
   return(result);
 }
 

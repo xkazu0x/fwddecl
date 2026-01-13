@@ -12,6 +12,11 @@ target:
 target:
 {
   executable: "build/example.exe"
+  working_directory: src
+}
+target:
+{
+  executable: "build/fwddecl.exe"
   working_directory: "src/"
   enabled: 1
 }

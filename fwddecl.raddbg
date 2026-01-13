@@ -1,19 +1,5 @@
 // raddbg 0.9.18 project file
 
-recent_file: path: "src/example.c"
-recent_file: path: "src/platform/krueger_platform_graphics_win32.c"
-recent_file: path: "src/base/krueger_base_arena.c"
-recent_file: path: "src/fwddecl.c"
-target:
-{
-  executable: "build/fwddecl.exe"
-  working_directory: src
-}
-target:
-{
-  executable: "build/example.exe"
-  working_directory: src
-}
 target:
 {
   executable: "build/fwddecl.exe"

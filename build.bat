@@ -10,7 +10,7 @@ if "%release%"=="1"     set debug=0 && echo [release mode]
 if "%msvc%"=="1"        set clang=0 && echo [msvc compile]
 if "%clang%"=="1"       set msvc=0 && echo [clang compile]
 
-set cl_common=/I..\src\ /nologo /GR- /EHa- /Gm- /FC /Z7 /Oi /GS- /std:c11 /D_CRT_SECURE_NO_WARNINGS /W4 /wd4100 /wd4200 /wd4310
+set cl_common=/I..\src\ /nologo /GR- /EHa- /Gm- /FC /Z7 /Oi /GS- /std:c11 /D_CRT_SECURE_NO_WARNINGS /W4 /wd4100 /wd4200 /wd4310 /wd4702
 set cl_debug=call cl /Od /Ob1 /DBUILD_DEBUG=1 %cl_common%
 set cl_release=call cl /O2 /DBUILD_DEBUG=0 %cl_common%
 set cl_shared=/LD
@@ -44,8 +44,9 @@ if not exist build mkdir build
 
 pushd build
 %compile% ..\src\fwddecl_main.c %link% %out% fwddecl.exe || exit /b 1
-if "%run%"=="1" (
-  call fwddecl.exe ..\src\example.c ..\src\example2.c || exit /b 1
-  %compile% ..\src\example_main.c %link% %out% example.exe || exit /b 1
+if "%example%"=="1" (
+  call fwddecl.exe ..\src\example\example.c ..\src\example\example2.c || exit /b 1
+  %compile% ..\src\example\example_main.c %link% %out% example.exe || exit /b 1
+  call example.exe || exit /b 1
 )
 popd

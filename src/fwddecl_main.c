@@ -237,7 +237,7 @@ platform_write_data_to_file_path(String8 path, String8 data) {
 
 internal void
 entry_point(int argc, char **argv) {
-  if (argc != 2) {
+  if (argc < 2) {
     log_info("usage: fwddecl <files>");
     platform_abort(1);
   }

@@ -253,6 +253,7 @@ entry_point(int argc, char **argv) {
     if (file_data.str) {
       String8_List structs = {0};
       String8_List internals = {0};
+      b32 skip_next = false;
 
       Tokenizer tokenizer = {.at = file_data.str};
       for (b32 stop = false; !stop;) {
@@ -262,7 +263,14 @@ entry_point(int argc, char **argv) {
             stop = true;
           } break;
           case TOKEN_IDENTIFIER: {
-            if (str8_match(token.text, str8_lit("struct"))) {
+            if (skip_next) {
+              skip_next = false;
+              continue;
+            }
+            if (str8_match(token.text, str8_lit("fwddecl_ignore"))) {
+              skip_next = true;
+              continue;
+            } else if (str8_match(token.text, str8_lit("struct"))) {
               parse_struct(&tokenizer, tmp.arena, &structs);
             } else if (str8_match(token.text, str8_lit("internal"))) {
               parse_internal(&tokenizer, tmp.arena, &internals);
@@ -280,6 +288,10 @@ entry_point(int argc, char **argv) {
       str8_list_push(tmp.arena, &write_list, str8_lit("\n"));
       str8_list_push(tmp.arena, &write_list, str8_cat(tmp.arena, str8_lit("#define "), file_guard));
       str8_list_push(tmp.arena, &write_list, str8_lit("\n\n"));
+      str8_list_push(tmp.arena, &write_list, str8_lit("#ifndef fwddecl_ignore\n"));
+      str8_list_push(tmp.arena, &write_list, str8_lit("#define fwddecl_ignore\n"));
+      str8_list_push(tmp.arena, &write_list, str8_lit("#endif\n"));
+      str8_list_push(tmp.arena, &write_list, str8_lit("\n"));
       str8_list_cat(&write_list, &structs);
       str8_list_push(tmp.arena, &write_list, str8_lit("\n"));
       str8_list_cat(&write_list, &internals);

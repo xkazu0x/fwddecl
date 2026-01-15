@@ -38,12 +38,11 @@ entry_point(int argc, char **argv) {
 
   for (b32 quit = false; !quit;) {
     Temp scratch = scratch_begin(0, 0);
-    Os_Event_List event_list = os_get_event_list(scratch.arena);
-    for (Os_Event *event = event_list.first; event != 0; event = event->next) {
-      switch (event->type) {
-        case OS_EVENT_WINDOW_CLOSE: {
-          quit = true;
-        } break;
+    Os_Event_List events = os_get_event_list(scratch.arena);
+    for (Os_Event *event = events.first; event != 0; event = event->next) {
+      if (event->type == OS_EVENT_WINDOW_CLOSE) {
+        quit = true;
+        break;
       }
     }
 
@@ -52,6 +51,8 @@ entry_point(int argc, char **argv) {
 
     scratch_end(scratch);
   }
+
+  os_window_close(window);
 }
 
 internal void

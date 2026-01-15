@@ -310,10 +310,10 @@ internal Os_Event_List
 os_get_event_list(Arena *arena) {
   _win32_event_arena = arena;
   mem_zero_struct(&_win32_event_list);
-  MSG message;
-  while (PeekMessageW(&message, 0, 0, 0, PM_REMOVE)) {
-    TranslateMessage(&message);
-    DispatchMessageW(&message);
+  MSG msg;
+  while (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE)) {
+    TranslateMessage(&msg);
+    DispatchMessageW(&msg);
   }
   return(_win32_event_list);
 }

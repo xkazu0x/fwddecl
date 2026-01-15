@@ -43,6 +43,6 @@ internal _Linux_Window *_linux_window_from_xwnd(Window xwnd);
 internal _Linux_Window *_linux_window_alloc(void);
 internal void _linux_window_release(_Linux_Window *window);
 
-internal Keycode _linux_keycode_from_keysym(KeySym keysym);
+internal Keycode _linux_key_from_keysym(KeySym keysym);
 
 #endif // KRUEGER_OS_GFX_LINUX_H

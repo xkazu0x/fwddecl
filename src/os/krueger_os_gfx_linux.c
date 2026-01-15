@@ -52,80 +52,80 @@ _linux_window_release(_Linux_Window *window) {
   stack_push(_lnx_gfx_state->first_free_window, window);
 }
 
-internal Keycode
-_linux_keycode_from_keysym(KeySym keysym) {
-  Keycode result = KEY_NULL;
+internal Os_Key
+_linux_key_from_keysym(KeySym keysym) {
+  Os_Key result = OS_KEY_NULL;
   switch (keysym) {
-    case XK_Escape: {result = KEY_ESCAPE;} break;
-    case XK_BackSpace: {result = KEY_SPACE;} break;
+    case XK_Escape: {result = OS_KEY_ESCAPE;} break;
+    case XK_BackSpace: {result = OS_KEY_SPACE;} break;
 
-    case XK_F1: {result = KEY_F1;} break;
-    case XK_F2: {result = KEY_F2;} break;
-    case XK_F3: {result = KEY_F3;} break;
-    case XK_F4: {result = KEY_F4;} break;
-    case XK_F5: {result = KEY_F5;} break;
-    case XK_F6: {result = KEY_F6;} break;
-    case XK_F7: {result = KEY_F7;} break;
-    case XK_F8: {result = KEY_F8;} break;
-    case XK_F9: {result = KEY_F9;} break;
-    case XK_F10: {result = KEY_F10;} break;
-    case XK_F11: {result = KEY_F11;} break;
-    case XK_F12: {result = KEY_F12;} break;
-    case XK_F13: {result = KEY_F13;} break;
-    case XK_F14: {result = KEY_F14;} break;
-    case XK_F15: {result = KEY_F15;} break;
-    case XK_F16: {result = KEY_F16;} break;
-    case XK_F17: {result = KEY_F17;} break;
-    case XK_F18: {result = KEY_F18;} break;
-    case XK_F19: {result = KEY_F19;} break;
-    case XK_F20: {result = KEY_F20;} break;
-    case XK_F21: {result = KEY_F21;} break;
-    case XK_F22: {result = KEY_F22;} break;
-    case XK_F23: {result = KEY_F23;} break;
-    case XK_F24: {result = KEY_F24;} break;
+    case XK_F1: {result = OS_KEY_F1;} break;
+    case XK_F2: {result = OS_KEY_F2;} break;
+    case XK_F3: {result = OS_KEY_F3;} break;
+    case XK_F4: {result = OS_KEY_F4;} break;
+    case XK_F5: {result = OS_KEY_F5;} break;
+    case XK_F6: {result = OS_KEY_F6;} break;
+    case XK_F7: {result = OS_KEY_F7;} break;
+    case XK_F8: {result = OS_KEY_F8;} break;
+    case XK_F9: {result = OS_KEY_F9;} break;
+    case XK_F10: {result = OS_KEY_F10;} break;
+    case XK_F11: {result = OS_KEY_F11;} break;
+    case XK_F12: {result = OS_KEY_F12;} break;
+    case XK_F13: {result = OS_KEY_F13;} break;
+    case XK_F14: {result = OS_KEY_F14;} break;
+    case XK_F15: {result = OS_KEY_F15;} break;
+    case XK_F16: {result = OS_KEY_F16;} break;
+    case XK_F17: {result = OS_KEY_F17;} break;
+    case XK_F18: {result = OS_KEY_F18;} break;
+    case XK_F19: {result = OS_KEY_F19;} break;
+    case XK_F20: {result = OS_KEY_F20;} break;
+    case XK_F21: {result = OS_KEY_F21;} break;
+    case XK_F22: {result = OS_KEY_F22;} break;
+    case XK_F23: {result = OS_KEY_F23;} break;
+    case XK_F24: {result = OS_KEY_F24;} break;
 
-    case XK_Up: {result = KEY_UP;} break;
-    case XK_Left: {result = KEY_LEFT;} break;
-    case XK_Down: {result = KEY_DOWN;} break;
-    case XK_Right: {result = KEY_RIGHT;} break;
+    case XK_Up: {result = OS_KEY_UP;} break;
+    case XK_Left: {result = OS_KEY_LEFT;} break;
+    case XK_Down: {result = OS_KEY_DOWN;} break;
+    case XK_Right: {result = OS_KEY_RIGHT;} break;
 
-    case XK_0: {result = KEY_0;} break;
-    case XK_1: {result = KEY_1;} break;
-    case XK_2: {result = KEY_2;} break;
-    case XK_3: {result = KEY_3;} break;
-    case XK_4: {result = KEY_4;} break;
-    case XK_5: {result = KEY_5;} break;
-    case XK_6: {result = KEY_6;} break;
-    case XK_7: {result = KEY_7;} break;
-    case XK_8: {result = KEY_8;} break;
-    case XK_9: {result = KEY_9;} break;
+    case XK_0: {result = OS_KEY_0;} break;
+    case XK_1: {result = OS_KEY_1;} break;
+    case XK_2: {result = OS_KEY_2;} break;
+    case XK_3: {result = OS_KEY_3;} break;
+    case XK_4: {result = OS_KEY_4;} break;
+    case XK_5: {result = OS_KEY_5;} break;
+    case XK_6: {result = OS_KEY_6;} break;
+    case XK_7: {result = OS_KEY_7;} break;
+    case XK_8: {result = OS_KEY_8;} break;
+    case XK_9: {result = OS_KEY_9;} break;
 
-    case XK_A: case XK_a: {result = KEY_A;} break;
-    case XK_B: case XK_b: {result = KEY_B;} break;
-    case XK_C: case XK_c: {result = KEY_C;} break;
-    case XK_D: case XK_d: {result = KEY_D;} break;
-    case XK_E: case XK_e: {result = KEY_E;} break;
-    case XK_F: case XK_f: {result = KEY_F;} break;
-    case XK_G: case XK_g: {result = KEY_G;} break;
-    case XK_H: case XK_h: {result = KEY_H;} break;
-    case XK_I: case XK_i: {result = KEY_I;} break;
-    case XK_J: case XK_j: {result = KEY_J;} break;
-    case XK_K: case XK_k: {result = KEY_K;} break;
-    case XK_L: case XK_l: {result = KEY_L;} break;
-    case XK_M: case XK_m: {result = KEY_M;} break;
-    case XK_N: case XK_n: {result = KEY_N;} break;
-    case XK_O: case XK_o: {result = KEY_O;} break;
-    case XK_P: case XK_p: {result = KEY_P;} break;
-    case XK_Q: case XK_q: {result = KEY_Q;} break;
-    case XK_R: case XK_r: {result = KEY_R;} break;
-    case XK_S: case XK_s: {result = KEY_S;} break;
-    case XK_T: case XK_t: {result = KEY_T;} break;
-    case XK_U: case XK_u: {result = KEY_U;} break;
-    case XK_V: case XK_v: {result = KEY_V;} break;
-    case XK_W: case XK_w: {result = KEY_W;} break;
-    case XK_X: case XK_x: {result = KEY_X;} break;
-    case XK_Y: case XK_y: {result = KEY_Y;} break;
-    case XK_Z: case XK_z: {result = KEY_Z;} break;
+    case XK_A: case XK_a: {result = OS_KEY_A;} break;
+    case XK_B: case XK_b: {result = OS_KEY_B;} break;
+    case XK_C: case XK_c: {result = OS_KEY_C;} break;
+    case XK_D: case XK_d: {result = OS_KEY_D;} break;
+    case XK_E: case XK_e: {result = OS_KEY_E;} break;
+    case XK_F: case XK_f: {result = OS_KEY_F;} break;
+    case XK_G: case XK_g: {result = OS_KEY_G;} break;
+    case XK_H: case XK_h: {result = OS_KEY_H;} break;
+    case XK_I: case XK_i: {result = OS_KEY_I;} break;
+    case XK_J: case XK_j: {result = OS_KEY_J;} break;
+    case XK_K: case XK_k: {result = OS_KEY_K;} break;
+    case XK_L: case XK_l: {result = OS_KEY_L;} break;
+    case XK_M: case XK_m: {result = OS_KEY_M;} break;
+    case XK_N: case XK_n: {result = OS_KEY_N;} break;
+    case XK_O: case XK_o: {result = OS_KEY_O;} break;
+    case XK_P: case XK_p: {result = OS_KEY_P;} break;
+    case XK_Q: case XK_q: {result = OS_KEY_Q;} break;
+    case XK_R: case XK_r: {result = OS_KEY_R;} break;
+    case XK_S: case XK_s: {result = OS_KEY_S;} break;
+    case XK_T: case XK_t: {result = OS_KEY_T;} break;
+    case XK_U: case XK_u: {result = OS_KEY_U;} break;
+    case XK_V: case XK_v: {result = OS_KEY_V;} break;
+    case XK_W: case XK_w: {result = OS_KEY_W;} break;
+    case XK_X: case XK_x: {result = OS_KEY_X;} break;
+    case XK_Y: case XK_y: {result = OS_KEY_Y;} break;
+    case XK_Z: case XK_z: {result = OS_KEY_Z;} break;
   }
   return(result);
 }
@@ -261,10 +261,10 @@ os_get_event_list(Arena *arena) {
         _Linux_Window *window = _linux_window_from_xwnd(xevent.xclient.window);
         KeySym keysym = XLookupKeysym(&xevent.xkey, 0);
         Os_Event_Type event_type = (xevent.type == KeyPress) ? 
-          OS_EVENT_KEY_PRESS : PLATFORM_EVENT_KEY_RELEASE;
+          OS_EVENT_KEY_PRESS : OS_EVENT_KEY_RELEASE;
         Os_Event *event = os_event_list_push(arena, &event_list, event_type);
         event->window = _linux_handle_from_window(window);
-        event->keycode = _linux_keycode_from_keysym(keysym);
+        event->key = _linux_key_from_keysym(keysym);
       } break;
     }
   }

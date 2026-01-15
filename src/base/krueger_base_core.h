@@ -25,7 +25,7 @@
 #define false 0
 #define true 1
 
-#if PLATFORM_WINDOWS
+#if OS_WINDOWS
 # define shared_function __declspec(dllexport)
 #else
 # define shared_function

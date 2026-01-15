@@ -1,7 +1,7 @@
 #ifndef KRUEGER_OS_GFX_H
 #define KRUEGER_OS_GFX_H
 
-#include "krueger_keycode.h"
+#include "krueger_os_gfx_key.h"
 
 //////////////
 // NOTE: Types
@@ -22,7 +22,7 @@ struct Os_Event {
   Os_Event *next;
   Os_Event_Type type;
   Os_Handle window;
-  Keycode keycode;
+  Os_Key key;
 };
 
 typedef struct Os_Event_List Os_Event_List;

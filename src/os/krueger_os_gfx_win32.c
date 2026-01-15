@@ -79,7 +79,7 @@ _win32_window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
           OS_EVENT_KEY_RELEASE;
         Os_Event *event = os_event_list_push(_win32_event_arena, &_win32_event_list, type);
         event->window = _win32_handle_from_window(window);
-        event->keycode = _win32_gfx_state->key_table[wparam&bitmask8];
+        event->key = _win32_gfx_state->key_table[wparam&bitmask8];
       } break;
       default: {
         result = DefWindowProcW(hwnd, message, wparam, lparam);
@@ -118,23 +118,23 @@ os_graphics_init(void) {
     _win32_gfx_state->info.refresh_rate = (f32)devmode.dmDisplayFrequency;
   }
 
-  _win32_gfx_state->key_table[VK_ESCAPE] = KEY_ESCAPE;
-  _win32_gfx_state->key_table[VK_SPACE] = KEY_SPACE;
+  _win32_gfx_state->key_table[VK_ESCAPE] = OS_KEY_ESCAPE;
+  _win32_gfx_state->key_table[VK_SPACE] = OS_KEY_SPACE;
 
-  _win32_gfx_state->key_table[VK_UP] = KEY_UP;
-  _win32_gfx_state->key_table[VK_LEFT] = KEY_LEFT;
-  _win32_gfx_state->key_table[VK_DOWN] = KEY_DOWN;
-  _win32_gfx_state->key_table[VK_RIGHT] = KEY_RIGHT;
+  _win32_gfx_state->key_table[VK_UP] = OS_KEY_UP;
+  _win32_gfx_state->key_table[VK_LEFT] = OS_KEY_LEFT;
+  _win32_gfx_state->key_table[VK_DOWN] = OS_KEY_DOWN;
+  _win32_gfx_state->key_table[VK_RIGHT] = OS_KEY_RIGHT;
 
-  for (u32 i = VK_F1, j = KEY_F1; i <= VK_F24; ++i, ++j) {
+  for (u32 i = VK_F1, j = OS_KEY_F1; i <= VK_F24; ++i, ++j) {
     _win32_gfx_state->key_table[i] = j;
   }
 
-  for (u32 i = '0', j = KEY_0; i <= '9'; ++i, ++j) {
+  for (u32 i = '0', j = OS_KEY_0; i <= '9'; ++i, ++j) {
     _win32_gfx_state->key_table[i] = j;
   }
 
-  for (u32 i = 'A', j = KEY_A; i <= 'Z'; ++i, ++j) {
+  for (u32 i = 'A', j = OS_KEY_A; i <= 'Z'; ++i, ++j) {
     _win32_gfx_state->key_table[i] = j;
   }
 }

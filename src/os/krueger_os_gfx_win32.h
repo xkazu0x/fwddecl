@@ -28,7 +28,7 @@ struct _Win32_Graphics_State {
   _Win32_Window *first_window;
   _Win32_Window *last_window;
   _Win32_Window *free_window;
-  Keycode key_table[0xFF];
+  Os_Key key_table[0xFF];
 };
 
 ////////////////

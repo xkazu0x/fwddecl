@@ -8,11 +8,11 @@
 #define COMPILER_CLANG 1
 
 #if defined(_WIN32)
-#define PLATFORM_WINDOWS 1
+#define OS_WINDOWS 1
 #elif defined(__gnu_linux__) || defined(__linux__)
-#define PLATFORM_LINUX 1
+#define OS_LINUX 1
 #elif defined(__APPLE__) && defined(__MACH__)
-#define PLATFORM_MAC 1
+#define OS_MAC 1
 #error compiler/platform not supported.
 #endif
 
@@ -35,7 +35,7 @@
 #define COMPILER_MSVC 1
 
 #if defined(_WIN32)
-#define PLATFORM_WINDOWS 1
+#define OS_WINDOWS 1
 #else
 #error compiler/platform not supported.
 #endif
@@ -59,11 +59,11 @@
 #define COMPILER_GCC 1
 
 #if defined(_WIN32)
-#define PLATFORM_WINDOWS 1
+#define OS_WINDOWS 1
 #elif defined(__gnu_linux__) || defined(__linux__)
-#define PLATFORM_LINUX 1
+#define OS_LINUX 1
 #elif defined(__APPLE__) && defined(__MACH__)
-#define PLATFORM_MAC 1
+#define OS_MAC 1
 #else
 #error compiler/platform not supported.
 #endif
@@ -111,14 +111,14 @@
 #if !defined(COMPILER_GCC)
 #define COMPILER_GCC 0
 #endif
-#if !defined(PLATFORM_WINDOWS)
-#define PLATFORM_WINDOWS 0
+#if !defined(OS_WINDOWS)
+#define OS_WINDOWS 0
 #endif
-#if !defined(PLATFORM_LINUX)
-#define PLATFORM_LINUX 0
+#if !defined(OS_LINUX)
+#define OS_LINUX 0
 #endif
-#if !defined(PLATFORM_MAC)
-#define PLATFORM_MAC 0
+#if !defined(OS_MAC)
+#define OS_MAC 0
 #endif
 #if !defined(ARCH_X64)
 #define ARCH_X64 0

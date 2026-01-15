@@ -1,11 +1,11 @@
-#ifndef KRUEGER_PLATFORM_AUDIO_WIN32_C
-#define KRUEGER_PLATFORM_AUDIO_WIN32_C
+#ifndef KRUEGER_OS_AUDIO_WIN32_C
+#define KRUEGER_OS_AUDIO_WIN32_C
 
-//////////////////////////
-// NOTE: Windows Functions
+////////////////////////
+// NOTE: Win32 Functions
 
 internal DWORD WINAPI
-_win32_wasapi_thread_proc(LPVOID param) {
+_win32_wasapi_thread_fn(LPVOID param) {
   u32 buffer_frame_count;
   IAudioClient_GetBufferSize(_win32_audio_state.audio_client, &buffer_frame_count);
   IAudioClient_Start(_win32_audio_state.audio_client);
@@ -16,17 +16,17 @@ _win32_wasapi_thread_proc(LPVOID param) {
     u32 num_frames = buffer_frame_count - padding_frame_count;
     s16 *buffer;
     IAudioRenderClient_GetBuffer(_win32_audio_state.render_client, num_frames, (BYTE **)&buffer);
-    _platform_audio_desc.callback(buffer, num_frames, _platform_audio_desc.user_data);
+    _os_audio_desc.callback(buffer, num_frames, _os_audio_desc.user_data);
     IAudioRenderClient_ReleaseBuffer(_win32_audio_state.render_client, num_frames, 0);
   }
   return(0);
 }
 
-/////////////////////////////////
-// NOTE: Implemented Per-Platform
+//////////////////////////////////////////////////////////
+// NOTE: Main Initialization/Shutdown (Implemented Per-OS)
 
 internal void
-platform_audio_init(void) {
+os_audio_init(void) {
   _win32_check(CoInitializeEx(0, COINIT_MULTITHREADED));
   _win32_audio_state.buffer_end_event = CreateEvent(0, 0, 0, 0);
 
@@ -36,8 +36,8 @@ platform_audio_init(void) {
 
   WAVEFORMATEX audio_format = {0};
   audio_format.wFormatTag = WAVE_FORMAT_PCM;
-  audio_format.nChannels = (WORD)_platform_audio_desc.num_channels;
-  audio_format.nSamplesPerSec = _platform_audio_desc.sample_rate;
+  audio_format.nChannels = (WORD)_os_audio_desc.num_channels;
+  audio_format.nSamplesPerSec = _os_audio_desc.sample_rate;
   audio_format.wBitsPerSample = 16;
   audio_format.nBlockAlign = (audio_format.nChannels*audio_format.wBitsPerSample)/8;
   audio_format.nAvgBytesPerSec = audio_format.nSamplesPerSec*audio_format.nBlockAlign;
@@ -47,11 +47,11 @@ platform_audio_init(void) {
   _win32_check(IAudioClient_GetService(_win32_audio_state.audio_client, &_win32_IID_IAudioRenderClient, &_win32_audio_state.render_client));
   _win32_check(IAudioClient_SetEventHandle(_win32_audio_state.audio_client, _win32_audio_state.buffer_end_event));
 
-  _win32_audio_state.thread_handle = CreateThread(0, 0, _win32_wasapi_thread_proc, 0, 0, 0);
+  _win32_audio_state.thread_handle = CreateThread(0, 0, _win32_wasapi_thread_fn, 0, 0, 0);
 }
 
 internal void
-platform_audio_shutdown(void) {
+os_audio_shutdown(void) {
   CloseHandle(_win32_audio_state.thread_handle);
   IAudioClient_Stop(_win32_audio_state.audio_client);
 
@@ -64,4 +64,4 @@ platform_audio_shutdown(void) {
   CoUninitialize();
 }
 
-#endif // KRUEGER_PLATFORM_AUDIO_WIN32_C
+#endif // KRUEGER_OS_AUDIO_WIN32_C

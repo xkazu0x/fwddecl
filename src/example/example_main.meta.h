@@ -5,6 +5,7 @@
 #define fwddecl_ignore
 #endif
 
+
 typedef struct Image Image;
 
 internal void *test_ptr(void *ptr, void *ptr2);

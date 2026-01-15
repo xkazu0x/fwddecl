@@ -1,5 +1,5 @@
-#ifndef KRUEGER_PLATFORM_CORE_WIN32_H
-#define KRUEGER_PLATFORM_CORE_WIN32_H
+#ifndef KRUEGER_OS_CORE_WIN32_H
+#define KRUEGER_OS_CORE_WIN32_H
 
 /////////////////////////////
 // NOTE: Includes / Libraries
@@ -26,16 +26,16 @@ struct _Win32_File_Iter {
   WIN32_FIND_DATAW find_data;
 };
 
-////////////////////////
-// NOTE: Windows Globals
+////////////////
+// NOTE: Globals
 
 global u64 _win32_us_res;
 
-///////////////////////////
-// NOTE: Windows Functions
+//////////////////
+// NOTE: Functions
 
 internal void _win32_date_time_from_system_time(Date_Time *out, SYSTEMTIME *in);
 internal void _win32_dense_time_from_file_time(Dense_Time *out, FILETIME *in);
 internal File_Property_Flags _win32_file_property_flags_from_dwFileAttributes(DWORD dwFileAttributes);
 
-#endif // KRUEGER_PLATFORM_CORE_WIN32_H
+#endif // KRUEGER_OS_CORE_WIN32_H

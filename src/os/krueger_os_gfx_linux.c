@@ -1,5 +1,5 @@
-#ifndef KRUEGER_PLATFORM_GRAPHICS_LINUX_C
-#define KRUEGER_PLATFORM_GRAPHICS_LINUX_C
+#ifndef KRUEGER_OS_GFX_LINUX_C
+#define KRUEGER_OS_GFX_LINUX_C
 
 ////////////////////////
 // NOTE: Linux Functions
@@ -130,27 +130,33 @@ _linux_keycode_from_keysym(KeySym keysym) {
   return(result);
 }
 
-///////////////////////////
-// NOTE: Platform Functions
+/////////////////////////////////////////////////
+// NOTE: Main Initialization (Implemented Per-OS)
 
 internal void
-platform_graphics_init(void) {
+os_gfx_init(void) {
   Arena *arena = arena_alloc();
   _lnx_gfx_state = push_struct(arena, _Linux_Graphics_State);
   _lnx_gfx_state->arena = arena;
   _lnx_gfx_state->display = XOpenDisplay(0);
   _lnx_gfx_state->wm_delete_window = XInternAtom(_lnx_gfx_state->display, "WM_DELETE_WINDOW", 0);
 
-  _lnx_gfx_state->gfx_info.refresh_rate = 60.0f;
+  _lnx_gfx_state->info.refresh_rate = 60.0f;
 }
+
+//////////////////////////////////////////////////
+// NOTE: Graphics System Info (Implemented Per-OS)
 
 internal Platform_Graphics_Info
-platform_get_graphics_info(void) {
-  return(_lnx_gfx_state->gfx_info);
+os_get_gfx_info(void) {
+  return(_lnx_gfx_state->info);
 }
 
+/////////////////////////////////////
+// NOTE: Windows (Implemented Per-OS)
+
 internal Platform_Handle
-platform_window_open(String8 name, s32 width, s32 height) {
+os_window_open(String8 name, s32 width, s32 height) {
   s32 window_w = width;
   s32 window_h = height;
 
@@ -189,39 +195,39 @@ platform_window_open(String8 name, s32 width, s32 height) {
 }
 
 internal void
-platform_window_close(Platform_Handle handle) {
-  if (platform_handle_is_valid(handle)) {
+os_window_close(Platform_Handle handle) {
+  if (os_handle_is_valid(handle)) {
     _Linux_Window *window = _linux_window_from_handle(handle);
     _linux_window_release(window);
   }
 }
 
 internal void
-platform_window_show(Platform_Handle handle) {
-  if (platform_handle_is_valid(handle)) {
+os_window_show(Platform_Handle handle) {
+  if (os_handle_is_valid(handle)) {
     _Linux_Window *window = _linux_window_from_handle(handle);
     XMapWindow(_lnx_gfx_state->display, window->xwnd);
   }
 }
 
 internal void
-platform_window_blit(Platform_Handle handle, u32 *buffer, s32 buffer_w, s32 buffer_h) {
+os_window_blit(Platform_Handle handle, u32 *buffer, s32 buffer_w, s32 buffer_h) {
 }
 
 internal b32
-platform_window_is_fullscreen(Platform_Handle handle) {
+os_window_is_fullscreen(Platform_Handle handle) {
   b32 result = true;
   return(result);
 }
 
 internal void
-platform_window_set_fullscreen(Platform_Handle handle, b32 fullscreen) {
+os_window_set_fullscreen(Platform_Handle handle, b32 fullscreen) {
 }
 
 internal Rect2
-platform_get_window_client_rect(Platform_Handle handle) {
+os_window_get_client_rect(Platform_Handle handle) {
   Rect2 result = {0};
-  if (platform_handle_is_valid(handle)) {
+  if (os_handle_is_valid(handle)) {
     _Linux_Window *window = _linux_window_from_handle(handle);
     XWindowAttributes attribs;
     XGetWindowAttributes(_lnx_gfx_state->display, window->xwnd, &attribs);
@@ -233,8 +239,11 @@ platform_get_window_client_rect(Platform_Handle handle) {
   return(result);
 }
 
+////////////////////////////////////
+// NOTE: Events (Implemented Per-OS)
+
 internal Platform_Event_List
-platform_get_event_list(Arena *arena) {
+os_get_event_list(Arena *arena) {
   Platform_Event_List event_list = {0};
   while(XPending(_lnx_gfx_state->display)) {
     XEvent xevent;
@@ -243,7 +252,7 @@ platform_get_event_list(Arena *arena) {
       case ClientMessage: {
         if((Atom)xevent.xclient.data.l[0] == _lnx_gfx_state->wm_delete_window) {
           _Linux_Window *window = _linux_window_from_xwnd(xevent.xclient.window);
-          Platform_Event *event = platform_event_list_push(arena, &event_list, PLATFORM_EVENT_WINDOW_CLOSE);
+          Platform_Event *event = os_event_list_push(arena, &event_list, OS_EVENT_WINDOW_CLOSE);
           event->window = _linux_handle_from_window(window);
         }
       } break;
@@ -252,8 +261,8 @@ platform_get_event_list(Arena *arena) {
         _Linux_Window *window = _linux_window_from_xwnd(xevent.xclient.window);
         KeySym keysym = XLookupKeysym(&xevent.xkey, 0);
         Platform_Event_Type event_type = (xevent.type == KeyPress) ? 
-          PLATFORM_EVENT_KEY_PRESS : PLATFORM_EVENT_KEY_RELEASE;
-        Platform_Event *event = platform_event_list_push(arena, &event_list, event_type);
+          OS_EVENT_KEY_PRESS : PLATFORM_EVENT_KEY_RELEASE;
+        Platform_Event *event = os_event_list_push(arena, &event_list, event_type);
         event->window = _linux_handle_from_window(window);
         event->keycode = _linux_keycode_from_keysym(keysym);
       } break;
@@ -262,4 +271,4 @@ platform_get_event_list(Arena *arena) {
   return(event_list);
 }
 
-#endif // KRUEGER_PLATFORM_GRAPHICS_LINUX_C
+#endif // KRUEGER_OS_GFX_LINUX_C

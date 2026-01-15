@@ -1,8 +1,8 @@
-#ifndef KRUEGER_PLATFORM_CORE_WIN32_C
-#define KRUEGER_PLATFORM_CORE_WIN32_C
+#ifndef KRUEGER_OS_CORE_WIN32_C
+#define KRUEGER_OS_CORE_WIN32_C
 
-//////////////////////////
-// NOTE: Windows Functions
+////////////////////////
+// NOTE: Win32 Functions
 
 internal void
 _win32_date_time_from_system_time(Date_Time *out, SYSTEMTIME *in) {
@@ -33,11 +33,11 @@ _win32_file_property_flags_from_dwFileAttributes(DWORD dwFileAttributes) {
   return(result);
 }
 
-/////////////////////////////////////////////////
-// NOTE: Init/Shutdown (Implemented Per-Platform)
+///////////////////////////////////////////
+// NOTE: Init/Shutdown (Implemented Per-OS)
 
 internal void
-platform_core_init(void) {
+os_core_init(void) {
   LARGE_INTEGER large_integer;
   QueryPerformanceFrequency(&large_integer);
   _win32_us_res = large_integer.QuadPart;
@@ -45,12 +45,15 @@ platform_core_init(void) {
 }
 
 internal void
-platform_core_shutdown(void) {
+os_core_shutdown(void) {
   timeEndPeriod(1);
 }
 
+/////////////////////////////////////////
+// NOTE: System Info (Implemented Per-OS)
+
 internal Date_Time
-platform_get_date_time(void) {
+os_get_date_time(void) {
   SYSTEMTIME system;
   GetSystemTime(&system);
   Date_Time result = {
@@ -66,7 +69,7 @@ platform_get_date_time(void) {
 }
 
 internal String8
-platform_get_exec_file_path(Arena *arena) {
+os_get_exec_file_path(Arena *arena) {
   Temp scratch = scratch_begin(&arena, 1);
   u16 *tmp = push_array(scratch.arena, u16, MAX_PATH);
   DWORD len = GetModuleFileNameW(0, tmp, MAX_PATH);
@@ -77,41 +80,44 @@ platform_get_exec_file_path(Arena *arena) {
   return(result);
 }
 
+//////////////////////////////////////////
+// NOTE: System Abort (Implemented Per-OS)
+
 internal void
-platform_abort(s32 exit_code) {
+os_abort(s32 exit_code) {
   ExitProcess(exit_code);
 }
 
-/////////////////////////////////////////////////////
-// NOTE: Memory Allocation (Implemented Per-Platform)
+///////////////////////////////////////////////
+// NOTE: Memory Allocation (Implemented Per-OS)
 
 internal void *
-platform_reserve(uxx size) {
+os_reserve(uxx size) {
   void *result = VirtualAlloc(0, size, MEM_RESERVE, PAGE_READWRITE);
   return(result);
 }
 
 internal b32
-platform_commit(void *ptr, uxx size) {
+os_commit(void *ptr, uxx size) {
   b32 result = (VirtualAlloc(ptr, size, MEM_COMMIT, PAGE_READWRITE) != 0);
   return(result);
 }
 
 internal void
-platform_decommit(void *ptr, uxx size) {
+os_decommit(void *ptr, uxx size) {
   VirtualFree(ptr, size, MEM_DECOMMIT);
 }
 
 internal void
-platform_release(void *ptr, uxx size) {
+os_release(void *ptr, uxx size) {
   VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
-////////////////////////////////////////
-// NOTE: Time (Implemented Per-Platform)
+//////////////////////////////////
+// NOTE: Time (Implemented Per-OS)
 
 internal u64
-platform_get_time_us(void) {
+os_get_time_us(void) {
   LARGE_INTEGER large_integer;
   QueryPerformanceCounter(&large_integer);
   u64 result = large_integer.QuadPart*million(1)/_win32_us_res;
@@ -119,27 +125,27 @@ platform_get_time_us(void) {
 }
 
 internal void
-platform_sleep_ms(u32 ms) {
+os_sleep_ms(u32 ms) {
   Sleep(ms);
 }
 
-///////////////////////////////////////////////
-// NOTE: File System (Implemented Per-Platform)
+/////////////////////////////////////////
+// NOTE: File System (Implemented Per-OS)
 
-internal Platform_Handle
-platform_file_open(String8 path, Platform_File_Flags flags) {
-  Platform_Handle result = {0};
+internal Os_Handle
+os_file_open(String8 path, Os_File_Open_Flags flags) {
+  Os_Handle result = {0};
   Temp scratch = scratch_begin(0, 0);
   String16 path16 = str16_from_str8(scratch.arena, path);
   DWORD desired_access = 0;
   DWORD share_mode = 0;
   DWORD creation_disposition = OPEN_EXISTING;
-  if (flags & PLATFORM_FILE_READ)        desired_access |= GENERIC_READ;
-  if (flags & PLATFORM_FILE_WRITE)       desired_access |= GENERIC_WRITE;
-  if (flags & PLATFORM_FILE_EXECUTE)     desired_access |= GENERIC_EXECUTE;
-  if (flags & PLATFORM_FILE_SHARE_READ)  share_mode |= FILE_SHARE_READ;
-  if (flags & PLATFORM_FILE_SHARE_WRITE) share_mode |= FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-  if (flags & PLATFORM_FILE_WRITE)       creation_disposition = CREATE_ALWAYS;
+  if (flags & OS_FILE_OPEN_READ)        desired_access |= GENERIC_READ;
+  if (flags & OS_FILE_OPEN_WRITE)       desired_access |= GENERIC_WRITE;
+  if (flags & OS_FILE_OPEN_EXECUTE)     desired_access |= GENERIC_EXECUTE;
+  if (flags & OS_FILE_OPEN_SHARE_READ)  share_mode |= FILE_SHARE_READ;
+  if (flags & OS_FILE_OPEN_SHARE_WRITE) share_mode |= FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+  if (flags & OS_FILE_OPEN_WRITE)       creation_disposition = CREATE_ALWAYS;
   HANDLE handle = CreateFileW(path16.str, desired_access, share_mode, 0, creation_disposition, FILE_ATTRIBUTE_NORMAL, 0);
   if (handle != INVALID_HANDLE_VALUE) {
     result.ptr[0] = (uxx)handle; 
@@ -149,13 +155,13 @@ platform_file_open(String8 path, Platform_File_Flags flags) {
 }
 
 internal void
-platform_file_close(Platform_Handle file) {
+os_file_close(Os_Handle file) {
   HANDLE handle = (HANDLE)file.ptr[0];
   CloseHandle(handle);
 }
 
 internal u32
-platform_file_read(Platform_Handle file, void *buffer, u64 size) {
+os_file_read(Os_Handle file, void *buffer, u64 size) {
   u32 read_size = 0;
   HANDLE handle = (HANDLE)file.ptr[0];
   ReadFile(handle, buffer, (DWORD)size, (DWORD *)&read_size, 0);
@@ -163,7 +169,7 @@ platform_file_read(Platform_Handle file, void *buffer, u64 size) {
 }
 
 internal u32
-platform_file_write(Platform_Handle file, void *buffer, u64 size) {
+os_file_write(Os_Handle file, void *buffer, u64 size) {
   u32 write_size = 0;
   HANDLE handle = (HANDLE)file.ptr[0];
   WriteFile(handle, buffer, (DWORD)size, (DWORD *)&write_size, 0);
@@ -171,7 +177,7 @@ platform_file_write(Platform_Handle file, void *buffer, u64 size) {
 }
 
 internal u64
-platform_get_file_size(Platform_Handle file) {
+os_file_get_size(Os_Handle file) {
   u64 result = 0;
   HANDLE handle = (HANDLE)file.ptr[0];
   GetFileSizeEx(handle, (LARGE_INTEGER *)&result);
@@ -179,9 +185,9 @@ platform_get_file_size(Platform_Handle file) {
 }
 
 internal File_Properties
-platform_get_file_properties(Platform_Handle file) {
+os_file_get_properties(Os_Handle file) {
   File_Properties result = {0};
-  if (platform_handle_is_valid(file)) {
+  if (os_handle_is_valid(file)) {
     HANDLE handle = (HANDLE)file.ptr[0];
     BY_HANDLE_FILE_INFORMATION info;
     if (GetFileInformationByHandle(handle, &info)) {
@@ -195,7 +201,7 @@ platform_get_file_properties(Platform_Handle file) {
 }
 
 internal b32
-platform_copy_file_path(String8 dst, String8 src) {
+os_copy_file_path(String8 dst, String8 src) {
   Temp scratch = scratch_begin(0, 0);
   String16 dst16 = str16_from_str8(scratch.arena, dst);
   String16 src16 = str16_from_str8(scratch.arena, src);
@@ -204,12 +210,12 @@ platform_copy_file_path(String8 dst, String8 src) {
   return(result);
 }
 
-internal Platform_File_Iter *
-platform_file_iter_begin(Arena *arena, String8 path, Platform_File_Iter_Flags flags) {
+internal Os_File_Iter *
+os_file_iter_begin(Arena *arena, String8 path, Os_File_Iter_Flags flags) {
   Temp scratch = scratch_begin(&arena, 1);
   String8 path_with_wildcard = str8_cat(scratch.arena, path, str8_lit("\\*"));
   String16 path16 = str16_from_str8(scratch.arena, path_with_wildcard);
-  Platform_File_Iter *result = push_struct(arena, Platform_File_Iter);
+  Os_File_Iter *result = push_struct(arena, Os_File_Iter);
   result->flags = flags;
   result->ptr = push_struct(arena, _Win32_File_Iter);
   _Win32_File_Iter *win32_iter = (_Win32_File_Iter *)result->ptr;
@@ -219,11 +225,11 @@ platform_file_iter_begin(Arena *arena, String8 path, Platform_File_Iter_Flags fl
 }
 
 internal b32
-platform_file_iter_next(Arena *arena, Platform_File_Iter *iter, Platform_File_Info *info_out) {
+os_file_iter_next(Arena *arena, Os_File_Iter *iter, Os_File_Info *info_out) {
   b32 result = false;
-  Platform_File_Iter_Flags flags = iter->flags;
+  Os_File_Iter_Flags flags = iter->flags;
   _Win32_File_Iter *win32_iter = (_Win32_File_Iter *)iter->ptr;
-  if (!(flags & PLATFORM_FILE_ITER_DONE) && win32_iter->handle != INVALID_HANDLE_VALUE) {
+  if (!(flags & OS_FILE_ITER_DONE) && win32_iter->handle != INVALID_HANDLE_VALUE) {
     do {
       b32 is_usable = true;
 
@@ -231,7 +237,7 @@ platform_file_iter_next(Arena *arena, Platform_File_Iter *iter, Platform_File_In
       DWORD attributes = win32_iter->find_data.dwFileAttributes;
 
       if (file_name[0] == '.') {
-        if (flags & PLATFORM_FILE_ITER_SKIP_HIDDEN) {
+        if (flags & OS_FILE_ITER_SKIP_HIDDEN) {
           is_usable = false;
         } else if (file_name[1] == 0) {
           is_usable = false;
@@ -241,11 +247,11 @@ platform_file_iter_next(Arena *arena, Platform_File_Iter *iter, Platform_File_In
       }
 
       if (attributes & FILE_ATTRIBUTE_DIRECTORY) {
-        if (flags & PLATFORM_FILE_ITER_SKIP_DIRECTORY) {
+        if (flags & OS_FILE_ITER_SKIP_DIRECTORY) {
           is_usable = false;
         }
       } else {
-        if (flags & PLATFORM_FILE_ITER_SKIP_FILE) {
+        if (flags & OS_FILE_ITER_SKIP_FILE) {
           is_usable = false;
         }
       }
@@ -257,7 +263,7 @@ platform_file_iter_next(Arena *arena, Platform_File_Iter *iter, Platform_File_In
         _win32_dense_time_from_file_time(&info_out->props.modified, &win32_iter->find_data.ftLastWriteTime);
         info_out->props.flags = _win32_file_property_flags_from_dwFileAttributes(attributes);
         if (!FindNextFileW(win32_iter->handle, &win32_iter->find_data)) {
-          iter->flags |= PLATFORM_FILE_ITER_DONE;
+          iter->flags |= OS_FILE_ITER_DONE;
         }
         result = true;
         break;
@@ -265,23 +271,23 @@ platform_file_iter_next(Arena *arena, Platform_File_Iter *iter, Platform_File_In
     } while (FindNextFileW(win32_iter->handle, &win32_iter->find_data));
   }
   if (!result) {
-    iter->flags |= PLATFORM_FILE_ITER_DONE;
+    iter->flags |= OS_FILE_ITER_DONE;
   }
   return(result);
 }
 
 internal void
-platform_file_iter_end(Platform_File_Iter *iter) {
+os_file_iter_end(Os_File_Iter *iter) {
   _Win32_File_Iter *win32_iter = (_Win32_File_Iter *)iter->ptr;
   FindClose(win32_iter->handle);
 }
 
-////////////////////////////////////////////////////////////////
-// NOTE: Dinamically-Loaded Libraries (Implemented Per-Platform)
+//////////////////////////////////////////////////////////
+// NOTE: Dinamically-Loaded Libraries (Implemented Per-OS)
 
-internal Platform_Handle
-platform_library_open(String8 path) {
-  Platform_Handle result = {0};
+internal Os_Handle
+os_library_open(String8 path) {
+  Os_Handle result = {0};
   Temp scratch = scratch_begin(0, 0);
   String16 path16 = str16_from_str8(scratch.arena, path);
   HMODULE module = LoadLibraryW(path16.str);
@@ -290,8 +296,14 @@ platform_library_open(String8 path) {
   return(result);
 }
 
+internal void
+os_library_close(Os_Handle lib) {
+  HMODULE module = (HMODULE)lib.ptr[0];
+  FreeLibrary(module);
+}
+
 internal void *
-platform_library_load_proc(Platform_Handle lib, String8 name) {
+os_library_load_proc(Os_Handle lib, String8 name) {
   Temp scratch = scratch_begin(0, 0);
   HMODULE module = (HMODULE)lib.ptr[0];
   name = str8_copy(scratch.arena, name);
@@ -300,14 +312,8 @@ platform_library_load_proc(Platform_Handle lib, String8 name) {
   return(result);
 }
 
-internal void
-platform_library_close(Platform_Handle lib) {
-  HMODULE module = (HMODULE)lib.ptr[0];
-  FreeLibrary(module);
-}
-
-///////////////////////////////////////////////
-// NOTE: Entry Point (Implemented Per-Platform)
+/////////////////////////////////////////
+// NOTE: Entry Point (Implemented Per-OS)
 
 #if BUILD_ENTRY_POINT
 #if BUILD_CONSOLE_INTERFACE
@@ -325,4 +331,4 @@ WinMain(HINSTANCE instance, HINSTANCE prev_instance, PSTR cmd_line, int cmd_show
 #endif
 #endif
 
-#endif // KRUEGER_PLATFORM_CORE_WIN32_C
+#endif // KRUEGER_OS_CORE_WIN32_C

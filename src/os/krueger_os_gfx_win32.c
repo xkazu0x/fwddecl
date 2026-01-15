@@ -1,17 +1,17 @@
-#ifndef KRUEGER_PLATFORM_GRAPHICS_WIN32_C
-#define KRUEGER_PLATFORM_GRAPHICS_WIN32_C
+#ifndef KRUEGER_OS_GFX_WIN32_C
+#define KRUEGER_OS_GFX_WIN32_C
 
-//////////////////////////
-// NOTE: Windows Functions
+////////////////////////
+// NOTE: Win32 Functions
 
-internal Platform_Handle
+internal Os_Handle
 _win32_handle_from_window(_Win32_Window *window) {
-  Platform_Handle result = {(uxx)window};
+  Os_Handle result = {(uxx)window};
   return(result);
 }
 
 internal _Win32_Window *
-_win32_window_from_handle(Platform_Handle handle) {
+_win32_window_from_handle(Os_Handle handle) {
   _Win32_Window *result = (_Win32_Window *)handle.ptr[0];
   return(result);
 }
@@ -61,7 +61,7 @@ _win32_window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     _Win32_Window *window = _win32_window_from_hwnd(hwnd);
     switch (message) {
       case WM_CLOSE: {
-        Platform_Event *event = platform_event_list_push(_win32_event_arena, &_win32_event_list, PLATFORM_EVENT_WINDOW_CLOSE);
+        Os_Event *event = os_event_list_push(_win32_event_arena, &_win32_event_list, OS_EVENT_WINDOW_CLOSE);
         event->window = _win32_handle_from_window(window);
       } break;
       case WM_SYSKEYDOWN:
@@ -74,10 +74,10 @@ _win32_window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
       case WM_KEYUP: {
         // b32 was_down = lparam&bit31);
         b32 is_down = !(lparam&bit32);
-        Platform_Event_Type type = (is_down) ?
-          PLATFORM_EVENT_KEY_PRESS :
-          PLATFORM_EVENT_KEY_RELEASE;
-        Platform_Event *event = platform_event_list_push(_win32_event_arena, &_win32_event_list, type);
+        Os_Event_Type type = (is_down) ?
+          OS_EVENT_KEY_PRESS :
+          OS_EVENT_KEY_RELEASE;
+        Os_Event *event = os_event_list_push(_win32_event_arena, &_win32_event_list, type);
         event->window = _win32_handle_from_window(window);
         event->keycode = _win32_gfx_state->key_table[wparam&bitmask8];
       } break;
@@ -91,11 +91,11 @@ _win32_window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   return(result);
 }
 
-///////////////////////////
-// NOTE: Platform Functions
+/////////////////////////////////////////////////
+// NOTE: Main Initialization (Implemented Per-OS)
 
 internal void
-platform_graphics_init(void) {
+os_gfx_init(void) {
   Arena *arena = arena_alloc();
   _win32_gfx_state = push_array(arena, _Win32_Graphics_State, 1);
   _win32_gfx_state->arena = arena;
@@ -115,7 +115,7 @@ platform_graphics_init(void) {
 
   DEVMODEW devmode = {.dmSize = sizeof(devmode)};
   if (EnumDisplaySettingsW(0, ENUM_CURRENT_SETTINGS, &devmode)) {
-    _win32_gfx_state->gfx_info.refresh_rate = (f32)devmode.dmDisplayFrequency;
+    _win32_gfx_state->info.refresh_rate = (f32)devmode.dmDisplayFrequency;
   }
 
   _win32_gfx_state->key_table[VK_ESCAPE] = KEY_ESCAPE;
@@ -139,13 +139,19 @@ platform_graphics_init(void) {
   }
 }
 
-internal Platform_Graphics_Info
-platform_get_graphics_info(void) {
-  return(_win32_gfx_state->gfx_info);
+//////////////////////////////////////////////////
+// NOTE: Graphics System Info (Implemented Per-OS)
+
+internal Os_Graphics_Info
+os_get_gfx_info(void) {
+  return(_win32_gfx_state->info);
 }
 
-internal Platform_Handle
-platform_window_open(String8 name, s32 width, s32 height) {
+/////////////////////////////////////
+// NOTE: Windows (Implemented Per-OS)
+
+internal Os_Handle
+os_window_open(String8 name, s32 width, s32 height) {
   Temp scratch = scratch_begin(0, 0);
   String16 window_name = str16_from_str8(scratch.arena, name);
 
@@ -181,30 +187,30 @@ platform_window_open(String8 name, s32 width, s32 height) {
   window->hwnd = hwnd;
   window->hdc = GetDC(hwnd);
 
-  Platform_Handle result = _win32_handle_from_window(window);
+  Os_Handle result = _win32_handle_from_window(window);
   scratch_end(scratch);
   return(result);
 }
 
 internal void
-platform_window_close(Platform_Handle handle) {
-  if (platform_handle_is_valid(handle)) {
+os_window_close(Os_Handle handle) {
+  if (os_handle_is_valid(handle)) {
     _Win32_Window *window = _win32_window_from_handle(handle);
     _win32_window_release(window);
   }
 }
 
 internal void
-platform_window_show(Platform_Handle handle) {
-  if (platform_handle_is_valid(handle)) {
+os_window_show(Os_Handle handle) {
+  if (os_handle_is_valid(handle)) {
     _Win32_Window *window = _win32_window_from_handle(handle);
     ShowWindow(window->hwnd, SW_SHOW);
   }
 }
 
 internal void
-platform_window_blit(Platform_Handle handle, u32 *buffer, s32 buffer_w, s32 buffer_h) {
-  if (platform_handle_is_valid(handle)) {
+os_window_blit(Os_Handle handle, u32 *buffer, s32 buffer_w, s32 buffer_h) {
+  if (os_handle_is_valid(handle)) {
     _Win32_Window *window = _win32_window_from_handle(handle);
     BITMAPINFO bitmap_info = {0};
     bitmap_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -244,9 +250,9 @@ platform_window_blit(Platform_Handle handle, u32 *buffer, s32 buffer_w, s32 buff
 }
 
 internal b32
-platform_window_is_fullscreen(Platform_Handle handle) {
+os_window_is_fullscreen(Os_Handle handle) {
   b32 result = false;
-  if (platform_handle_is_valid(handle)) {
+  if (os_handle_is_valid(handle)) {
     _Win32_Window *window = _win32_window_from_handle(handle);
     DWORD window_style = GetWindowLongW(window->hwnd, GWL_STYLE);
     result = !(window_style & WS_OVERLAPPEDWINDOW);
@@ -255,11 +261,11 @@ platform_window_is_fullscreen(Platform_Handle handle) {
 }
 
 internal void
-platform_window_set_fullscreen(Platform_Handle handle, b32 fullscreen) {
-  if (platform_handle_is_valid(handle)) {
+os_window_set_fullscreen(Os_Handle handle, b32 fullscreen) {
+  if (os_handle_is_valid(handle)) {
     _Win32_Window *window = _win32_window_from_handle(handle);
     DWORD window_style = GetWindowLongW(window->hwnd, GWL_STYLE);
-    b32 is_fullscreen_already = platform_window_is_fullscreen(handle);
+    b32 is_fullscreen_already = os_window_is_fullscreen(handle);
     if (fullscreen && !is_fullscreen_already) {
       MONITORINFO monitor_info = {.cbSize = sizeof(monitor_info)};
       if (GetWindowPlacement(window->hwnd, &window->last_placement) &&
@@ -283,9 +289,9 @@ platform_window_set_fullscreen(Platform_Handle handle, b32 fullscreen) {
 }
 
 internal Rect2
-platform_get_window_client_rect(Platform_Handle handle) {
+os_window_get_client_rect(Os_Handle handle) {
   Rect2 result = {0};
-  if (platform_handle_is_valid(handle)) {
+  if (os_handle_is_valid(handle)) {
     _Win32_Window *window = _win32_window_from_handle(handle);
     RECT client_rect;
     GetClientRect(window->hwnd, &client_rect);
@@ -297,8 +303,11 @@ platform_get_window_client_rect(Platform_Handle handle) {
   return(result);
 }
 
-internal Platform_Event_List
-platform_get_event_list(Arena *arena) {
+////////////////////////////////////
+// NOTE: Events (Implemented Per-OS)
+
+internal Os_Event_List
+os_get_event_list(Arena *arena) {
   _win32_event_arena = arena;
   mem_zero_struct(&_win32_event_list);
   MSG message;
@@ -309,4 +318,4 @@ platform_get_event_list(Arena *arena) {
   return(_win32_event_list);
 }
 
-#endif // KRUEGER_PLATFORM_GRAPHICS_WIN32_C
+#endif // KRUEGER_OS_GFX_WIN32_C

@@ -1,10 +1,10 @@
-#define PLATFORM_FEATURE_GRAPHICS 1
+#define OS_FEATURE_GFX 1
 
 #include "base/krueger_base.h"
-#include "platform/krueger_platform.h"
+#include "os/krueger_os.h"
 
 #include "base/krueger_base.c"
-#include "platform/krueger_platform.c"
+#include "os/krueger_os.c"
 
 #include "example_main.meta.h"
 
@@ -23,24 +23,24 @@ entry_point(int argc, char **argv) {
   u32 window_w = render_w;
   u32 window_h = render_h;
 
-  Platform_Handle window = platform_window_open(str8_lit("example"), window_w, window_h);
-  platform_window_show(window);
+  Os_Handle window = os_window_open(str8_lit("example"), window_w, window_h);
+  os_window_show(window);
 
   Image image = image_alloc(render_w, render_h);
 
   for (b32 quit = false; !quit;) {
     Temp scratch = scratch_begin(0, 0);
-    Platform_Event_List event_list = platform_get_event_list(scratch.arena);
-    for (Platform_Event *event = event_list.first; event != 0; event = event->next) {
+    Os_Event_List event_list = os_get_event_list(scratch.arena);
+    for (Os_Event *event = event_list.first; event != 0; event = event->next) {
       switch (event->type) {
-        case PLATFORM_EVENT_WINDOW_CLOSE: {
+        case OS_EVENT_WINDOW_CLOSE: {
           quit = true;
         } break;
       }
     }
     if (quit) break;
     draw_example(image);
-    platform_window_blit(window, image.pixels, image.width, image.height);
+    os_window_blit(window, image.pixels, image.width, image.height);
     scratch_end(scratch);
   }
 }
@@ -82,8 +82,8 @@ image_alloc(u32 width, u32 height) {
   result.width = width;
   result.height = height;
   result.pitch = width;
-  result.pixels = platform_reserve(image_size);
-  platform_commit(result.pixels, image_size);
+  result.pixels = os_reserve(image_size);
+  os_commit(result.pixels, image_size);
   return(result);
 }
 

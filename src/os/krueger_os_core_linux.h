@@ -1,5 +1,5 @@
-#ifndef KRUEGER_PLATFORM_CORE_LINUX_H
-#define KRUEGER_PLATFORM_CORE_LINUX_H
+#ifndef KRUEGER_OS_CORE_LINUX_H
+#define KRUEGER_OS_CORE_LINUX_H
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -10,4 +10,4 @@
 #include <dlfcn.h>
 #include <time.h>
 
-#endif // KRUEGER_PLATFORM_CORE_LINUX_H
+#endif // KRUEGER_OS_CORE_LINUX_H

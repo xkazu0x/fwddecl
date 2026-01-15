@@ -1,5 +1,5 @@
-#ifndef KRUEGER_PLATFORM_AUDIO_LINUX_H
-#define KRUEGER_PLATFORM_AUDIO_LINUX_H
+#ifndef KRUEGER_OS_AUDIO_LINUX_H
+#define KRUEGER_OS_AUDIO_LINUX_H
 
 /////////////////////////////
 // NOTE: Includes / Libraries
@@ -19,15 +19,15 @@ struct _Linux_Audio_State {
   void *buffer;
 };
 
-//////////////////////
-// NOTE: Linux Globals
+////////////////
+// NOTE: Globals
 
 global _Linux_Audio_State _lnx_audio_state;
 global Arena *_lnx_audio_arena;
 
-////////////////////////
-// NOTE: Linux Functions
+//////////////////
+// NOTE: Functions
 
-internal void *_linux_alsa_thread_proc(void *param);
+internal void *_linux_alsa_thread_fn(void *param);
 
-#endif // KRUEGER_PLATFORM_AUDIO_LINUX_H
+#endif // KRUEGER_OS_AUDIO_LINUX_H

@@ -1,25 +1,28 @@
-#ifndef KRUEGER_PLATFORM_CORE_LINUX_C
-#define KRUEGER_PLATFORM_CORE_LINUX_C
+#ifndef KRUEGER_OS_CORE_LINUX_C
+#define KRUEGER_OS_CORE_LINUX_C
 
-/////////////////////////////////////////////////
-// NOTE: Init/Shutdown (Implemented Per-Platform)
+///////////////////////////////////////////
+// NOTE: Init/Shutdown (Implemented Per-OS)
 
 internal void
-platform_core_init(void) {
+os_core_init(void) {
 }
 
 internal void
-platform_core_shutdown(void) {
+os_core_shutdown(void) {
 }
+
+/////////////////////////////////////////
+// NOTE: System Info (Implemented Per-OS)
 
 internal Date_Time
-platform_get_date_time(void) {
+os_get_date_time(void) {
   Date_Time result = {0};
   return(result);
 }
 
 internal String8
-platform_get_exec_file_path(Arena *arena) {
+os_get_exec_file_path(Arena *arena) {
   Temp scratch = scratch_begin(&arena, 1);
   u8 *tmp = push_array(scratch.arena, u8, PATH_MAX);
   ssize_t len = readlink("/proc/self/exe", (char *)tmp, PATH_MAX);
@@ -31,43 +34,46 @@ platform_get_exec_file_path(Arena *arena) {
   return(result);
 }
 
+//////////////////////////////////////////
+// NOTE: System Abort (Implemented Per-OS)
+
 internal void
-platform_abort(s32 exit_code) {
+os_abort(s32 exit_code) {
   exit(exit_code);
 }
 
-/////////////////////////////////////////////////////
-// NOTE: Memory Allocation (Implemented Per-Platform)
+///////////////////////////////////////////////
+// NOTE: Memory Allocation (Implemented Per-OS)
 
 internal void *
-platform_reserve(uxx size) {
+os_reserve(uxx size) {
   void *result = mmap(0, size, PROT_NONE , MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (result == MAP_FAILED) result = 0;
   return(result);
 }
 
 internal b32
-platform_commit(void *ptr, uxx size) {
+os_commit(void *ptr, uxx size) {
   mprotect(ptr, size, PROT_READ | PROT_WRITE);
   return(true);
 }
 
 internal void
-platform_decommit(void *ptr, uxx size) {
+os_decommit(void *ptr, uxx size) {
   madvise(ptr, size, MADV_DONTNEED);
   mprotect(ptr, size, PROT_NONE);
 }
 
 internal void
-platform_release(void *ptr, uxx size) {
+os_release(void *ptr, uxx size) {
   munmap(ptr, size);
 }
 
-////////////////////////////////////////
-// NOTE: Time (Implemented Per-Platform)
+//////////////////////////////////
+// NOTE: Time (Implemented Per-OS)
 
 internal u64
-platform_get_time_us(void) {
+os_get_time_us(void) {
   struct timespec clock;
   clock_gettime(CLOCK_MONOTONIC, &clock);
   u64 result = clock.tv_sec*million(1) + clock.tv_nsec/thousand(1); 
@@ -75,27 +81,27 @@ platform_get_time_us(void) {
 }
 
 internal void
-platform_sleep_ms(u32 ms) {
+os_sleep_ms(u32 ms) {
   usleep(ms*thousand(1));
 }
 
-///////////////////////////////////////////////
-// NOTE: File System (Implemented Per-Platform)
+/////////////////////////////////////////
+// NOTE: File System (Implemented Per-OS)
 
-internal Platform_Handle
-platform_file_open(String8 path, Platform_File_Flags flags) {
-  Platform_Handle result = {0};
+internal OS_Handle
+os_file_open(String8 path, OS_File_Flags flags) {
+  OS_Handle result = {0};
   Temp scratch = scratch_begin(0, 0);
   path = str8_copy(scratch.arena, path);
   int linux_flags = 0;
-  if ((flags & PLATFORM_FILE_READ) && (flags & PLATFORM_FILE_WRITE)) {
+  if ((flags & OS_FILE_READ) && (flags & PLATFORM_FILE_WRITE)) {
     linux_flags = O_RDWR;
-  } else if(flags & PLATFORM_FILE_WRITE) {
+  } else if(flags & OS_FILE_WRITE) {
     linux_flags = O_WRONLY;
-  } else if(flags & PLATFORM_FILE_READ) {
+  } else if(flags & OS_FILE_READ) {
     linux_flags = O_RDONLY;
   }
-  if(flags & PLATFORM_FILE_WRITE) {
+  if(flags & OS_FILE_WRITE) {
     linux_flags |= O_CREAT;
   }
   int fd = open((char *)path.str, linux_flags, S_IRUSR | S_IWUSR);
@@ -107,27 +113,27 @@ platform_file_open(String8 path, Platform_File_Flags flags) {
 }
 
 internal void
-platform_file_close(Platform_Handle file) {
+os_file_close(OS_Handle file) {
   int fd = (int)file.ptr[0];
   close(fd);
 }
 
 internal u32
-platform_file_read(Platform_Handle file, void *buffer, u64 size) {
+os_file_read(OS_Handle file, void *buffer, u64 size) {
   int fd = (int)file.ptr[0];
   u64 read_size = read(fd, buffer, size);
   return(read_size);
 }
 
 internal u32
-platform_file_write(Platform_Handle file, void *buffer, u64 size) {
+os_file_write(OS_Handle file, void *buffer, u64 size) {
   int fd = (int)file.ptr[0];
   u64 write_size = write(fd, buffer, size);
   return(write_size);
 }
 
 internal u64
-platform_get_file_size(Platform_Handle file) {
+os_file_get_size(OS_Handle file) {
   u64 result = 0;
   int fd = (int)file.ptr[0];
   struct stat st;
@@ -137,52 +143,58 @@ platform_get_file_size(Platform_Handle file) {
   return(result);
 }
 
+internal File_Properties
+os_file_get_properties(Os_Handle file) {
+  File_Properties result = {0};
+  return(result);
+}
+
 internal b32
-platform_copy_file_path(String8 dst, String8 src) {
+os_copy_file_path(String8 dst, String8 src) {
   b32 result = false;
-  Platform_Handle src_h = platform_file_open(src, PLATFORM_FILE_READ);
-  Platform_Handle dst_h = platform_file_open(dst, PLATFORM_FILE_WRITE);
-  if (!platform_handle_match(src_h, PLATFORM_HANDLE_NULL) &&
-      !platform_handle_match(dst_h, PLATFORM_HANDLE_NULL)) {
+  OS_Handle src_h = os_file_open(src, OS_FILE_READ);
+  OS_Handle dst_h = os_file_open(dst, OS_FILE_WRITE);
+  if (!os_handle_match(src_h, OS_HANDLE_NULL) &&
+      !os_handle_match(dst_h, OS_HANDLE_NULL)) {
     int src_fd = (int)src_h.ptr[0];
     int dst_fd = (int)dst_h.ptr[0];
     off_t sendfile_off = 0;
-    u64 size = platform_get_file_size(src_h);
+    u64 size = os_get_file_size(src_h);
     u32 write_size = sendfile(dst_fd, src_fd, &sendfile_off, size);
     if (write_size == size) {
       result = true;
     }
-    platform_file_close(src_h);
-    platform_file_close(dst_h);
+    os_file_close(src_h);
+    os_file_close(dst_h);
   }
   return(result);
 }
 
-internal Platform_File_Iter *
-platform_file_iter_begin(Arena *arena, String8 path, Platform_File_Iter_Flags flags) {
+internal OS_File_Iter *
+os_file_iter_begin(Arena *arena, String8 path, OS_File_Iter_Flags flags) {
   // TODO:
-  Platform_File_Iter *result = 0;
+  OS_File_Iter *result = 0;
   return(result);
 }
 
 internal b32
-platform_file_iter_next(Arena *arena, Platform_File_Iter *iter, Platform_File_Info *info_out) {
+os_file_iter_next(Arena *arena, OS_File_Iter *iter, OS_File_Info *info_out) {
   // TODO:
   b32 result = false;
   return(result);
 }
 
 internal void
-platform_file_iter_end(Platform_File_Iter *iter) {
+os_file_iter_end(OS_File_Iter *iter) {
   // TODO:
 }
 
-////////////////////////////////////////////////////////////////
-// NOTE: Dinamically-Loaded Libraries (Implemented Per-Platform)
+//////////////////////////////////////////////////////////
+// NOTE: Dinamically-Loaded Libraries (Implemented Per-OS)
 
-internal Platform_Handle
-platform_library_open(String8 path) {
-  Platform_Handle result = {0};
+internal OS_Handle
+os_library_open(String8 path) {
+  OS_Handle result = {0};
   Temp scratch = scratch_begin(0, 0);
   path = str8_copy(scratch.arena, path);
   result.ptr[0] = (uxx)dlopen((char *)path.str, RTLD_LAZY | RTLD_LOCAL);
@@ -190,8 +202,14 @@ platform_library_open(String8 path) {
   return(result);
 }
 
+internal void
+os_library_close(OS_Handle lib) {
+  void *so = (void *)lib.ptr[0];
+  dlclose(so);
+}
+
 internal void *
-platform_library_load_proc(Platform_Handle lib, String8 name) {
+os_library_load_proc(OS_Handle lib, String8 name) {
   Temp scratch = scratch_begin(0, 0);
   name = str8_copy(scratch.arena, name);
   void *so = (void *)lib.ptr[0];
@@ -200,14 +218,8 @@ platform_library_load_proc(Platform_Handle lib, String8 name) {
   return(result);
 }
 
-internal void
-platform_library_close(Platform_Handle lib) {
-  void *so = (void *)lib.ptr[0];
-  dlclose(so);
-}
-
-///////////////////////////////////////////////
-// NOTE: Entry Point (Implemented Per-Platform)
+/////////////////////////////////////////
+// NOTE: Entry Point (Implemented Per-OS)
 
 #if BUILD_ENTRY_POINT
 int
@@ -217,4 +229,4 @@ main(int argc, char **argv) {
 }
 #endif
 
-#endif // KRUEGER_PLATFORM_CORE_LINUX_C
+#endif // KRUEGER_OS_CORE_LINUX_C

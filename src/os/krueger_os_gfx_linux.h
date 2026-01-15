@@ -1,5 +1,5 @@
-#ifndef KRUEGER_PLATFORM_GRAPHICS_LINUX_H
-#define KRUEGER_PLATFORM_GRAPHICS_LINUX_H
+#ifndef KRUEGER_OS_GFX_LINUX_H
+#define KRUEGER_OS_GFX_LINUX_H
 
 /////////////////////////////
 // NOTE: Includes / Libraries
@@ -22,19 +22,19 @@ struct _Linux_Graphics_State {
   Arena *arena;
   Display *display;
   Atom wm_delete_window;
-  Platform_Graphics_Info gfx_info;
+  Os_Graphics_Info info;
   _Linux_Window *first_window;
   _Linux_Window *last_window;
   _Linux_Window *first_free_window;
 };
 
-//////////////////////
-// NOTE: Linux Globals
+////////////////
+// NOTE: Globals
 
 global _Linux_Graphics_State *_lnx_gfx_state;
 
-////////////////////////
-// NOTE: Linux Functions
+//////////////////
+// NOTE: Functions
 
 internal Platform_Handle _linux_handle_from_window(_Linux_Window *window);
 internal _Linux_Window *_linux_window_from_handle(Platform_Handle handle);
@@ -45,4 +45,4 @@ internal void _linux_window_release(_Linux_Window *window);
 
 internal Keycode _linux_keycode_from_keysym(KeySym keysym);
 
-#endif // KRUEGER_PLATFORM_GRAPHICS_LINUX_H
+#endif // KRUEGER_OS_GFX_LINUX_H

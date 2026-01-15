@@ -1,5 +1,5 @@
-#ifndef KRUEGER_PLATFORM_AUDIO_WIN32_H
-#define KRUEGER_PLATFORM_AUDIO_WIN32_H
+#ifndef KRUEGER_OS_AUDIO_WIN32_H
+#define KRUEGER_OS_AUDIO_WIN32_H
 
 /////////////////////////////
 // NOTE: Includes / Libraries
@@ -46,14 +46,14 @@ struct _Win32_Audio_State {
   IAudioRenderClient *render_client;
 };
 
-////////////////////////
-// NOTE: Windows Globals
+////////////////
+// NOTE: Globals
 
 global _Win32_Audio_State _win32_audio_state;
 
-//////////////////////////
-// NOTE: Windows Functions
+//////////////////
+// NOTE: Functions
 
-internal DWORD WINAPI _win32_wasapi_thread_proc(LPVOID param);
+internal DWORD WINAPI _win32_wasapi_thread_fn(LPVOID param);
 
-#endif // KRUEGER_PLATFORM_AUDIO_WIN32_H
+#endif // KRUEGER_OS_AUDIO_WIN32_H

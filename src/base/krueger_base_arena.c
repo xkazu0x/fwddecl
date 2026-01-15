@@ -9,8 +9,8 @@ _arena_alloc(Arena_Desc *desc) {
   uxx res_size = clamp_bot(ARENA_HEADER_SIZE, desc->res_size);
   void *base = desc->base;
   if (!base) {
-    base = platform_reserve(res_size);
-    platform_commit(base, res_size);
+    base = os_reserve(res_size);
+    os_commit(base, res_size);
   }
   Arena *result = (Arena *)base;
   result->res_size = res_size;
@@ -20,7 +20,7 @@ _arena_alloc(Arena_Desc *desc) {
 
 internal void
 arena_release(Arena *arena) {
-  platform_release(arena, arena->res_size);
+  os_release(arena, arena->res_size);
 }
 
 internal void *

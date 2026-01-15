@@ -95,7 +95,7 @@ _win32_window_proc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 // NOTE: Main Initialization (Implemented Per-OS)
 
 internal void
-os_gfx_init(void) {
+os_graphics_init(void) {
   Arena *arena = arena_alloc();
   _win32_gfx_state = push_array(arena, _Win32_Graphics_State, 1);
   _win32_gfx_state->arena = arena;
@@ -143,7 +143,7 @@ os_gfx_init(void) {
 // NOTE: Graphics System Info (Implemented Per-OS)
 
 internal Os_Graphics_Info
-os_get_gfx_info(void) {
+os_get_graphics_info(void) {
   return(_win32_gfx_state->info);
 }
 

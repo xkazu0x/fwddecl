@@ -1,10 +1,10 @@
 #ifndef KRUEGER_OPENGL_H
 #define KRUEGER_OPENGL_H
 
-#if !defined(OGL_MAJOR_VER)
+#if !defined(OGL_VERSION_MAJOR)
 #error opengl major version must be defined.
 #endif
-#if !defined(OGL_MINOR_VER)
+#if !defined(OGL_VERSION_MINOR)
 #error opengl minor version must be defined.
 #endif
 

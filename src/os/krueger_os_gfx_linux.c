@@ -134,7 +134,7 @@ _linux_keycode_from_keysym(KeySym keysym) {
 // NOTE: Main Initialization (Implemented Per-OS)
 
 internal void
-os_gfx_init(void) {
+os_graphics_init(void) {
   Arena *arena = arena_alloc();
   _lnx_gfx_state = push_struct(arena, _Linux_Graphics_State);
   _lnx_gfx_state->arena = arena;
@@ -148,7 +148,7 @@ os_gfx_init(void) {
 // NOTE: Graphics System Info (Implemented Per-OS)
 
 internal Os_Graphics_Info
-os_get_gfx_info(void) {
+os_get_graphics_info(void) {
   return(_lnx_gfx_state->info);
 }
 

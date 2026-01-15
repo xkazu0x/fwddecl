@@ -4,13 +4,13 @@
 //////////////
 // NOTE: Files
 
-typedef u32 Os_File_Open_Flags;
+typedef u32 Os_File_Flags;
 enum {
-  OS_FILE_OPEN_READ        = (1<<0),
-  OS_FILE_OPEN_WRITE       = (1<<1),
-  OS_FILE_OPEN_EXECUTE     = (1<<2),
-  OS_FILE_OPEN_SHARE_READ  = (1<<3),
-  OS_FILE_OPEN_SHARE_WRITE = (1<<4),
+  OS_FILE_READ        = (1<<0),
+  OS_FILE_WRITE       = (1<<1),
+  OS_FILE_EXECUTE     = (1<<2),
+  OS_FILE_SHARE_READ  = (1<<3),
+  OS_FILE_SHARE_WRITE = (1<<4),
 };
 
 typedef u32 Os_File_Iter_Flags;
@@ -43,11 +43,15 @@ struct Os_Handle {
 
 #define OS_HANDLE_NULL ((Os_Handle){0})
 
-////////////////////////////////////
-// NOTE: (Helpers, Implemented Once)
+///////////////////////////////////////////
+// NOTE: Handle (Helpers, Implemented Once)
 
 internal b32 os_handle_match(Os_Handle a, Os_Handle b);
 internal b32 os_handle_is_valid(Os_Handle handle);
+
+////////////////////////////////////////////////
+// NOTE: File System (Helpers, Implemented Once)
+
 internal String8 os_data_from_file_path(Arena *arena, String8 file_path);
 internal b32 os_write_data_to_file_path(String8 path, String8 data);
 
@@ -85,7 +89,7 @@ internal void os_sleep_ms(u32 ms);
 /////////////////////////////////////////
 // NOTE: File System (Implemented Per-OS)
 
-internal Os_Handle os_file_open(String8 path, Os_File_Open_Flags flags);
+internal Os_Handle os_file_open(String8 path, Os_File_Flags flags);
 internal void os_file_close(Os_Handle file);
 internal u32 os_file_read(Os_Handle file, void *buffer, u64 size);
 internal u32 os_file_write(Os_Handle file, void *buffer, u64 size);

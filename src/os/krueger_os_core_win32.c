@@ -133,19 +133,19 @@ os_sleep_ms(u32 ms) {
 // NOTE: File System (Implemented Per-OS)
 
 internal Os_Handle
-os_file_open(String8 path, Os_File_Open_Flags flags) {
+os_file_open(String8 path, Os_File_Flags flags) {
   Os_Handle result = {0};
   Temp scratch = scratch_begin(0, 0);
   String16 path16 = str16_from_str8(scratch.arena, path);
   DWORD desired_access = 0;
   DWORD share_mode = 0;
   DWORD creation_disposition = OPEN_EXISTING;
-  if (flags & OS_FILE_OPEN_READ)        desired_access |= GENERIC_READ;
-  if (flags & OS_FILE_OPEN_WRITE)       desired_access |= GENERIC_WRITE;
-  if (flags & OS_FILE_OPEN_EXECUTE)     desired_access |= GENERIC_EXECUTE;
-  if (flags & OS_FILE_OPEN_SHARE_READ)  share_mode |= FILE_SHARE_READ;
-  if (flags & OS_FILE_OPEN_SHARE_WRITE) share_mode |= FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-  if (flags & OS_FILE_OPEN_WRITE)       creation_disposition = CREATE_ALWAYS;
+  if (flags & OS_FILE_READ)        desired_access |= GENERIC_READ;
+  if (flags & OS_FILE_WRITE)       desired_access |= GENERIC_WRITE;
+  if (flags & OS_FILE_EXECUTE)     desired_access |= GENERIC_EXECUTE;
+  if (flags & OS_FILE_SHARE_READ)  share_mode |= FILE_SHARE_READ;
+  if (flags & OS_FILE_SHARE_WRITE) share_mode |= FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+  if (flags & OS_FILE_WRITE)       creation_disposition = CREATE_ALWAYS;
   HANDLE handle = CreateFileW(path16.str, desired_access, share_mode, 0, creation_disposition, FILE_ATTRIBUTE_NORMAL, 0);
   if (handle != INVALID_HANDLE_VALUE) {
     result.ptr[0] = (uxx)handle; 

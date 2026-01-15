@@ -94,7 +94,7 @@ os_file_open(String8 path, OS_File_Flags flags) {
   Temp scratch = scratch_begin(0, 0);
   path = str8_copy(scratch.arena, path);
   int linux_flags = 0;
-  if ((flags & OS_FILE_READ) && (flags & PLATFORM_FILE_WRITE)) {
+  if ((flags & OS_FILE_READ) && (flags & OS_FILE_WRITE)) {
     linux_flags = O_RDWR;
   } else if(flags & OS_FILE_WRITE) {
     linux_flags = O_WRONLY;

@@ -1,7 +1,7 @@
 #define OS_FEATURE_GFX 1
 
-#define OGL_MAJOR_VER 3
-#define OGL_MINOR_VER 0
+#define OGL_VERSION_MAJOR 3
+#define OGL_VERSION_MINOR 0
 
 #include "base/krueger_base.h"
 #include "os/krueger_os.h"

@@ -46,8 +46,8 @@ ogl_init(void) {
   wglChoosePixelFormatARB(hdc, _wgl_pf_attribs, 0, 1, &pf, &num_formats);
 
   int ctx_attribs[] = {
-    WGL_CONTEXT_MAJOR_VERSION_ARB, OGL_MAJOR_VER,
-    WGL_CONTEXT_MINOR_VERSION_ARB, OGL_MINOR_VER,
+    WGL_CONTEXT_MAJOR_VERSION_ARB, OGL_VERSION_MAJOR,
+    WGL_CONTEXT_MINOR_VERSION_ARB, OGL_VERSION_MINOR,
     0
   };
 

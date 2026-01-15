@@ -40,12 +40,12 @@ internal Os_Event *os_event_list_push(Arena *arena, Os_Event_List *list, Os_Even
 /////////////////////////////////////////////////
 // NOTE: Main Initialization (Implemented Per-OS)
 
-internal void os_gfx_init(void);
+internal void os_graphics_init(void);
 
 //////////////////////////////////////////////////
 // NOTE: Graphics System Info (Implemented Per-OS)
 
-internal Os_Graphics_Info os_get_gfx_info(void);
+internal Os_Graphics_Info os_get_graphics_info(void);
 
 /////////////////////////////////////
 // NOTE: Windows (Implemented Per-OS)

@@ -7,7 +7,7 @@ base_entry_point(int argc, char **argv) {
   thread_context_select(tctx);
   os_core_init();
 #if defined(KRUEGER_OS_GFX_H) && !defined(OS_GFX_INIT_MANUAL)
-  os_gfx_init();
+  os_graphics_init();
 #endif
 #if defined(KRUEGER_OPENGL_H) && !defined(OGL_INIT_MANUAL)
   ogl_init();

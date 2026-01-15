@@ -7,7 +7,7 @@
 #elif OS_LINUX
 #include "krueger_os_core_linux.c"
 #else
-#error core not implemented for the current os.
+#error os core not implemented for the current os.
 #endif
 
 #if OS_FEATURE_GFX
@@ -17,7 +17,7 @@
 #elif OS_LINUX
 #include "krueger_os_gfx_linux.c"
 #else
-#error gfx not implemented for the current os.
+#error os gfx not implemented for the current os.
 #endif
 #endif
 
@@ -28,7 +28,7 @@
 #elif OS_LINUX
 #include "krueger_os_audio_linux.c"
 #else
-#error audio not implemented for the current os.
+#error os audio not implemented for the current os.
 #endif
 #endif
 

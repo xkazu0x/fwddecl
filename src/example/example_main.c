@@ -1,10 +1,15 @@
 #define OS_FEATURE_GFX 1
 
+#define OGL_MAJOR_VER 3
+#define OGL_MINOR_VER 0
+
 #include "base/krueger_base.h"
 #include "os/krueger_os.h"
+#include "opengl/krueger_opengl.h"
 
 #include "base/krueger_base.c"
 #include "os/krueger_os.c"
+#include "opengl/krueger_opengl.c"
 
 #include "example_main.meta.h"
 
@@ -24,9 +29,12 @@ entry_point(int argc, char **argv) {
   u32 window_h = render_h;
 
   Os_Handle window = os_window_open(str8_lit("example"), window_w, window_h);
-  os_window_show(window);
-
   Image image = image_alloc(render_w, render_h);
+
+  ogl_window_equip(window);
+  ogl_window_select(window);
+
+  os_window_show(window);
 
   for (b32 quit = false; !quit;) {
     Temp scratch = scratch_begin(0, 0);
@@ -38,16 +46,62 @@ entry_point(int argc, char **argv) {
         } break;
       }
     }
-    if (quit) break;
+
     draw_example(image);
-    os_window_blit(window, image.pixels, image.width, image.height);
+    render_image_to_window(window, image);
+
     scratch_end(scratch);
   }
 }
 
-internal void *
-test_ptr(void *ptr, void* ptr2) {
-  return(0);
+internal void
+render_image_to_window(Os_Handle window, Image image) {
+  Rect2 client_rect = os_window_get_client_rect(window);
+  Vector2 client_size = vector2_sub(client_rect.max, client_rect.min);
+
+  glViewport(0, 0, (s32)client_size.x, (s32)client_size.y);
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image.pixels);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glEnable(GL_TEXTURE_2D);
+
+  f32 display_w = image.width*(client_size.y/image.height);
+  f32 display_h = image.height*(client_size.x/image.width);
+
+  if (client_size.x >= display_w) {
+    display_h = client_size.y;
+  } else if (client_size.y >= display_h) {
+    display_w = client_size.x;
+  }
+
+  f32 x = display_w/client_size.x;
+  f32 y = display_h/client_size.y;
+
+  glBegin(GL_TRIANGLES); {
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(-x, y);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(x, y);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(x, -y);
+
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(-x, y);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(x, -y);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(-x, -y);
+  } glEnd();
+
+  ogl_window_swap(window);
 }
 
 internal void

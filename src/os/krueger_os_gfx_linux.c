@@ -4,14 +4,14 @@
 ////////////////////////
 // NOTE: Linux Functions
 
-internal Platform_Handle
+internal Os_Handle
 _linux_handle_from_window(_Linux_Window *window) {
-  Platform_Handle result = {(uxx)window};
+  Os_Handle result = {(uxx)window};
   return(result);
 }
 
 internal _Linux_Window *
-_linux_window_from_handle(Platform_Handle handle) {
+_linux_window_from_handle(Os_Handle handle) {
   _Linux_Window *result = (_Linux_Window *)handle.ptr[0];
   return(result);
 }
@@ -147,7 +147,7 @@ os_gfx_init(void) {
 //////////////////////////////////////////////////
 // NOTE: Graphics System Info (Implemented Per-OS)
 
-internal Platform_Graphics_Info
+internal Os_Graphics_Info
 os_get_gfx_info(void) {
   return(_lnx_gfx_state->info);
 }
@@ -155,7 +155,7 @@ os_get_gfx_info(void) {
 /////////////////////////////////////
 // NOTE: Windows (Implemented Per-OS)
 
-internal Platform_Handle
+internal Os_Handle
 os_window_open(String8 name, s32 width, s32 height) {
   s32 window_w = width;
   s32 window_h = height;
@@ -190,12 +190,12 @@ os_window_open(String8 name, s32 width, s32 height) {
   _Linux_Window *window = _linux_window_alloc();
   window->xwnd = xwnd;
 
-  Platform_Handle result = _linux_handle_from_window(window);
+  Os_Handle result = _linux_handle_from_window(window);
   return(result);
 }
 
 internal void
-os_window_close(Platform_Handle handle) {
+os_window_close(Os_Handle handle) {
   if (os_handle_is_valid(handle)) {
     _Linux_Window *window = _linux_window_from_handle(handle);
     _linux_window_release(window);
@@ -203,7 +203,7 @@ os_window_close(Platform_Handle handle) {
 }
 
 internal void
-os_window_show(Platform_Handle handle) {
+os_window_show(Os_Handle handle) {
   if (os_handle_is_valid(handle)) {
     _Linux_Window *window = _linux_window_from_handle(handle);
     XMapWindow(_lnx_gfx_state->display, window->xwnd);
@@ -211,21 +211,21 @@ os_window_show(Platform_Handle handle) {
 }
 
 internal void
-os_window_blit(Platform_Handle handle, u32 *buffer, s32 buffer_w, s32 buffer_h) {
+os_window_blit(Os_Handle handle, u32 *buffer, s32 buffer_w, s32 buffer_h) {
 }
 
 internal b32
-os_window_is_fullscreen(Platform_Handle handle) {
+os_window_is_fullscreen(Os_Handle handle) {
   b32 result = true;
   return(result);
 }
 
 internal void
-os_window_set_fullscreen(Platform_Handle handle, b32 fullscreen) {
+os_window_set_fullscreen(Os_Handle handle, b32 fullscreen) {
 }
 
 internal Rect2
-os_window_get_client_rect(Platform_Handle handle) {
+os_window_get_client_rect(Os_Handle handle) {
   Rect2 result = {0};
   if (os_handle_is_valid(handle)) {
     _Linux_Window *window = _linux_window_from_handle(handle);
@@ -242,9 +242,9 @@ os_window_get_client_rect(Platform_Handle handle) {
 ////////////////////////////////////
 // NOTE: Events (Implemented Per-OS)
 
-internal Platform_Event_List
+internal Os_Event_List
 os_get_event_list(Arena *arena) {
-  Platform_Event_List event_list = {0};
+  Os_Event_List event_list = {0};
   while(XPending(_lnx_gfx_state->display)) {
     XEvent xevent;
     XNextEvent(_lnx_gfx_state->display, &xevent);
@@ -252,7 +252,7 @@ os_get_event_list(Arena *arena) {
       case ClientMessage: {
         if((Atom)xevent.xclient.data.l[0] == _lnx_gfx_state->wm_delete_window) {
           _Linux_Window *window = _linux_window_from_xwnd(xevent.xclient.window);
-          Platform_Event *event = os_event_list_push(arena, &event_list, OS_EVENT_WINDOW_CLOSE);
+          Os_Event *event = os_event_list_push(arena, &event_list, OS_EVENT_WINDOW_CLOSE);
           event->window = _linux_handle_from_window(window);
         }
       } break;
@@ -260,9 +260,9 @@ os_get_event_list(Arena *arena) {
       case KeyRelease: {
         _Linux_Window *window = _linux_window_from_xwnd(xevent.xclient.window);
         KeySym keysym = XLookupKeysym(&xevent.xkey, 0);
-        Platform_Event_Type event_type = (xevent.type == KeyPress) ? 
+        Os_Event_Type event_type = (xevent.type == KeyPress) ? 
           OS_EVENT_KEY_PRESS : PLATFORM_EVENT_KEY_RELEASE;
-        Platform_Event *event = os_event_list_push(arena, &event_list, event_type);
+        Os_Event *event = os_event_list_push(arena, &event_list, event_type);
         event->window = _linux_handle_from_window(window);
         event->keycode = _linux_keycode_from_keysym(keysym);
       } break;

@@ -36,8 +36,8 @@ global _Linux_Graphics_State *_lnx_gfx_state;
 //////////////////
 // NOTE: Functions
 
-internal Platform_Handle _linux_handle_from_window(_Linux_Window *window);
-internal _Linux_Window *_linux_window_from_handle(Platform_Handle handle);
+internal Os_Handle _linux_handle_from_window(_Linux_Window *window);
+internal _Linux_Window *_linux_window_from_handle(Os_Handle handle);
 internal _Linux_Window *_linux_window_from_xwnd(Window xwnd);
 
 internal _Linux_Window *_linux_window_alloc(void);

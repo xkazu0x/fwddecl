@@ -5,7 +5,6 @@
 #define fwddecl_ignore
 #endif
 
-
 typedef struct V2S32 V2S32;
 
 internal s32 add(s32 a, s32 b);

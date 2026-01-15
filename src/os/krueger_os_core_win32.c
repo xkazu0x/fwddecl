@@ -316,16 +316,30 @@ os_library_load_proc(Os_Handle lib, String8 name) {
 // NOTE: Entry Point (Implemented Per-OS)
 
 #if BUILD_ENTRY_POINT
+internal void
+_win32_entry_point_caller(int argc, WCHAR **wargv) {
+  // NOTE: convert arguments from UTF-16 to UTF-8
+  Arena *args_arena = arena_alloc(.res_size = MB(1));
+  char **argv = push_array(args_arena, char *, argc);
+  for (int i = 0; i < argc; i += 1) {
+    String16 arg16 = str16_cstr((u16 *)wargv[i]);
+    String8 arg8 = str8_from_str16(args_arena, arg16);
+    argv[i] = (char *)arg8.str;
+  }
+
+  // NOTE: call base entry point
+  base_entry_point(argc, argv);
+}
 #if BUILD_CONSOLE_INTERFACE
 int
-main(int argc, char **argv) {
-  base_entry_point(argc, argv);
+wmain(int argc, WCHAR **wargv) {
+  _win32_entry_point_caller(argc, wargv);
   return(0);
 }
 #else
 int
-WinMain(HINSTANCE instance, HINSTANCE prev_instance, PSTR cmd_line, int cmd_show) {
-  base_entry_point(__argc, __argv);
+wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_show) {
+  _win32_entry_point_caller(__argc, __wargv);
   return(0);
 }
 #endif

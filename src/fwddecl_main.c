@@ -257,7 +257,7 @@ entry_point(int argc, char **argv) {
     if (file_data.str) {
       String8_List enums = {0};
       String8_List structs = {0};
-      String8_List internals = {0};
+      String8_List functions = {0};
       b32 skip_next = false;
 
       Tokenizer tokenizer = {.at = file_data.str};
@@ -283,7 +283,7 @@ entry_point(int argc, char **argv) {
             } else if (str8_match(token.text, str8_lit("struct"))) {
               parse_struct(&tokenizer, dst_tmp.arena, &structs);
             } else if (str8_match(token.text, str8_lit("internal"))) {
-              parse_internal(&tokenizer, dst_tmp.arena, &internals);
+              parse_internal(&tokenizer, dst_tmp.arena, &functions);
             }
           } break;
         }
@@ -302,12 +302,18 @@ entry_point(int argc, char **argv) {
       str8_list_push(dst_tmp.arena, &write_list, str8_lit("#define fwddecl_ignore\n"));
       str8_list_push(dst_tmp.arena, &write_list, str8_lit("#endif\n"));
       str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
-      str8_list_cat(&write_list, &enums);
-      str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
-      str8_list_cat(&write_list, &structs);
-      str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
-      str8_list_cat(&write_list, &internals);
-      str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
+      if (enums.count) {
+        str8_list_cat(&write_list, &enums);
+        str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
+      }
+      if (structs.count) {
+        str8_list_cat(&write_list, &structs);
+        str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
+      }
+      if (functions.count) {
+        str8_list_cat(&write_list, &functions);
+        str8_list_push(dst_tmp.arena, &write_list, str8_lit("\n"));
+      }
       str8_list_push(dst_tmp.arena, &write_list, str8_cat(dst_tmp.arena, str8_lit("#endif // "), file_guard));
 
       String8 write_data = str8_list_join(dst_tmp.arena, &write_list, 0);
